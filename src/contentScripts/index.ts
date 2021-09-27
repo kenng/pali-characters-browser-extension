@@ -2,6 +2,7 @@
 import { onMessage } from 'webext-bridge'
 import { createApp } from 'vue'
 import App from './views/App.vue'
+import initPaliInput from '~/logic/keydown-listener'
 
 // Firefox `browser.tabs.executeScript()` requires scripts return a primitive value
 (() => {
@@ -23,4 +24,6 @@ import App from './views/App.vue'
   shadowDOM.appendChild(root)
   document.body.appendChild(container)
   createApp(App).mount(root)
+
+  initPaliInput()
 })()

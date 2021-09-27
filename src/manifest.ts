@@ -10,11 +10,13 @@ export async function getManifest() {
   // can also be conditional based on your need
   const manifest: Manifest.WebExtensionManifest = {
     manifest_version: 2,
-    name: pkg.displayName || pkg.name,
+    name: '__MSG_name__',
     version: pkg.version,
-    description: pkg.description,
+    default_locale: 'en',
+    description: '__MSG_description__',
+
     browser_action: {
-      default_icon: './assets/icon-512.png',
+      default_icon: './assets/icons/favicon-128x128.png',
       default_popup: './dist/popup/index.html',
     },
     options_ui: {
@@ -27,9 +29,9 @@ export async function getManifest() {
       persistent: false,
     },
     icons: {
-      16: './assets/icon-512.png',
-      48: './assets/icon-512.png',
-      128: './assets/icon-512.png',
+      16: './assets/icons/favicon-16x16.png',
+      48: './assets/icons/favicon-48x48.png',
+      128: './assets/icons/favicon-128x128.png',
     },
     permissions: [
       'tabs',
@@ -37,9 +39,10 @@ export async function getManifest() {
       'activeTab',
       'http://*/',
       'https://*/',
+      'file:///*',
     ],
     content_scripts: [{
-      matches: ['http://*/*', 'https://*/*'],
+      matches: ['http://*/*', 'https://*/*', 'file:///*'],
       js: ['./dist/contentScripts/index.global.js'],
     }],
     web_accessible_resources: [

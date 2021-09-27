@@ -11,8 +11,7 @@ export default defineConfig({
     watch: isDev
       ? {
         include: [
-          r('src/contentScripts/**/*'),
-          r('src/components/**/*'),
+          r('src/**/*'),
         ],
       }
       : undefined,

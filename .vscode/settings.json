@@ -4,6 +4,7 @@
   "volar.tsPlugin": true,
   "volar.tsPluginStatus": false,
   "vite.autoStart": false,
+  "editor.defaultFormatter": "vscode.typescript-language-features",
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true,
   },

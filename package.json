@@ -1,9 +1,8 @@
 {
-  "name": "vitesse-webext",
-  "displayName": "Vitesse WebExt",
-  "version": "0.0.1",
-  "description": "[description]",
-  "private": true,
+  "name": "pali-characters-browser-extension",
+  "displayName": "Pāli Characters Inputs",
+  "version": "1.0.2",
+  "description": "Browser extension to input Pāli characters easily",
   "scripts": {
     "dev": "npm run clear && cross-env NODE_ENV=development run-p dev:*",
     "dev:prepare": "esno scripts/prepare.ts",
