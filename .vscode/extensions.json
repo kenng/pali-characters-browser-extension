@@ -5,5 +5,8 @@
     "dbaeumer.vscode-eslint",
     "voorjaar.windicss-intellisense",
     "csstools.postcss"
+  ],
+  "unwantedRecommendations": [
+    "octref.vetur"
   ]
 }

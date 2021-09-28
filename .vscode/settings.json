@@ -1,10 +1,10 @@
 {
+  "search.useIgnoreFiles": true,
   "cSpell.words": ["Vitesse"],
   "typescript.tsdk": "node_modules/typescript/lib",
-  "volar.tsPlugin": true,
-  "volar.tsPluginStatus": false,
   "vite.autoStart": false,
-  "editor.defaultFormatter": "vscode.typescript-language-features",
+  "volar.takeOverBuiltinTsExtension": true,
+  "editor.defaultFormatter": "johnsoncodehk.volar",
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true,
   },
