@@ -1,5 +1,4 @@
-const constant = {
-    DOC_MUTATION_OBSERVER: 'doc-mutation-observer'
+export const MsgType = {
+  HELP: 'help',
+  RERUN: 're-run',
 }
-
-export default constant

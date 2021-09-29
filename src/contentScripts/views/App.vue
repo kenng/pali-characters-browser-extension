@@ -14,7 +14,7 @@
       bg="teal-600 hover:teal-700"
       @click="toggle()"
     >
-      <pixelarticons-power class="block m-auto text-white text-lg" />
+      <mdi-close class="block m-auto text-white text-lg" />
     </div>
   </div>
 </template>
