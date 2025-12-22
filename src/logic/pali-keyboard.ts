@@ -5,71 +5,118 @@
 //     ['ā', 'ḍ', 'ī', 'ḷ', 'ṁ', 'ṃ', 'ñ', 'ṇ', 'ṭ', 'ū', 'ŋ', 'ṅ'],
 // ];
 
-// diacritics
-// "Alt Ctrl N" for "n tilde"
-export const tilde: { [key: string]: string } = {
-    a: 'ā',
-    A: 'Ā',
-    i: 'ī',
-    I: 'Ī',
-    n: 'ñ',
-    N: 'Ñ',
-    u: 'ū',
-    U: 'Ū',
-    // ubuntu map it 'ctrl+alt+shift+u' to search unicode
-    Y: 'Ū',
-};
+// Exported maps for help guide UI
+export const tilde: Record<string, string> = {
+    A: 'ā',
+    I: 'ī',
+    N: 'ñ',
+    U: 'ū',
+}
 
-// "Ctrl M" for "m overdot",
-export const overdot: { [key: string]: string } = {
-    m: 'ṁ',
-    n: 'ṅ',
-    N: 'Ṅ',
-    // browser mostly map ctrl+n to open new tab
-    ',': 'ṅ',
-    '<': 'Ṅ',
-};
+export const overdot: Record<string, string> = {
+    M: 'ṁ',
+    N: 'ṅ',
+}
 
-// "Alt N" for "n underdot", etc.
-export const underdot: { [key: string]: string } = {
-    d: 'ḍ',
-    D: 'Ḍ',
-    l: 'ḷ',
-    L: 'Ḷ',
-    m: 'ṃ',
-    M: 'Ṃ',
-    g: 'ŋ',
-    n: 'ṇ',
-    N: 'Ṇ',
-    t: 'ṭ',
-    T: 'Ṭ',
-};
+export const underdot: Record<string, string> = {
+    D: 'ḍ',
+    L: 'ḷ',
+    M: 'ṃ',
+    G: 'ŋ',
+    N: 'ṇ',
+    T: 'ṭ',
+}
+
+// Universal Safe Alternative: Distinct mapping for Ctrl + Alt
+export const universalCodes: Record<string, string> = {
+    KeyA: 'ā',
+    KeyI: 'ī',
+    KeyU: 'ū',
+    KeyN: 'ñ',
+    KeyM: 'ṁ',
+    Comma: 'ṅ',
+    KeyD: 'ḍ',
+    KeyL: 'ḷ',
+    KeyT: 'ṭ',
+    KeyG: 'ŋ',
+    Period: 'ṇ',
+    Slash: 'ṃ',
+}
+
+// Physical Key Code Mappings (Layout Independent)
+const tildeCodes: Record<string, string> = {
+    KeyA: 'ā',
+    KeyI: 'ī',
+    KeyN: 'ñ',
+    KeyU: 'ū',
+    KeyY: 'ū',
+}
+
+const overdotCodes: Record<string, string> = {
+    KeyM: 'ṁ',
+    KeyN: 'ṅ',
+    Comma: 'ṅ',
+}
+
+const underdotCodes: Record<string, string> = {
+    KeyD: 'ḍ',
+    KeyL: 'ḷ',
+    KeyM: 'ṃ',
+    KeyG: 'ŋ',
+    KeyN: 'ṇ',
+    KeyT: 'ṭ',
+}
 
 export function onKeyDown(event: KeyboardEvent) {
-    if (event.altKey && event.key != 'Alt') {
-        if (event.ctrlKey && event.key != 'Control') {
-            if (tilde[event.key]) {
-                event.preventDefault();
-                console.log(`tilde: ${tilde[event.key]}`);
-                return tilde[event.key];
-            }
-        }
-        if (underdot[event.key]) {
-            console.log(`underdot: ${underdot[event.key]}`);
+    const isMac = typeof navigator !== 'undefined' && 
+                  (navigator.userAgent.includes('Mac') || navigator.platform.includes('Mac'));
+    
+    const hasCtrl = event.ctrlKey;
+    const hasAlt = event.altKey;
+    const hasMeta = event.metaKey; // Cmd on Mac
+    const hasShift = event.shiftKey;
+    const code = event.code;
+
+    // Conflicting keys (N for new window, M for minimize)
+    const isConflicting = code === 'KeyN' || code === 'KeyM';
+
+    // Universal Safe Alternative: Ctrl + Alt + Key
+    if (hasCtrl && hasAlt) {
+        const char = universalCodes[code];
+        if (char) {
             event.preventDefault();
-            return underdot[event.key];
+            return hasShift ? char.toUpperCase() : char;
         }
-        return;
-    } else if (
-        (event.ctrlKey && event.key != 'Control') ||
-        (event.metaKey && event.key != 'Meta')
-    ) {
-        if (overdot[event.key]) {
-            console.log(`overdot: ${overdot[event.key]}`);
-            event.preventDefault();
-            return overdot[event.key];
-        }
-        return;
     }
+
+    // Tilde: 
+    // Mac: Cmd + Alt + Key (if non-conflicting)
+    if (isMac && hasMeta && hasAlt && !isConflicting) {
+        const char = tildeCodes[code];
+        if (char) {
+            event.preventDefault();
+            return hasShift ? char.toUpperCase() : char;
+        }
+    }
+    
+    // Underdot: Alt + Key
+    if (hasAlt && !hasCtrl && !hasMeta) {
+        const char = underdotCodes[code];
+        if (char) {
+            event.preventDefault();
+            return hasShift ? char.toUpperCase() : char;
+        }
+    }
+    
+    // Overdot: 
+    // Mac: Cmd + Key (if non-conflicting) OR Ctrl + Key (always handled above or below)
+    if (((isMac && hasMeta && !isConflicting) || hasCtrl) && !hasAlt) {
+        const char = overdotCodes[code];
+        if (char) {
+            event.preventDefault();
+            return hasShift ? char.toUpperCase() : char;
+        }
+    }
+    
     return;
 }

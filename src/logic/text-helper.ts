@@ -42,8 +42,12 @@ export function getText(
 }
 
 export function setText(elem: Element, str: string) {
-  if (isFormElem(elem)) (elem as HTMLTextAreaElement).value = str
-  elem.innerHTML = str
+  if (isFormElem(elem)) {
+    (elem as HTMLTextAreaElement).value = str
+  }
+  else {
+    elem.innerHTML = str
+  }
 }
 
 function getTextNode(elem: Element): Element | null {

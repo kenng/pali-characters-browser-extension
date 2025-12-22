@@ -1,24 +1,49 @@
-import { tilde, underdot, overdot } from './pali-keyboard'
+import { tilde, underdot, overdot, universalCodes } from './pali-keyboard'
+
+export function isMac(): boolean {
+  return typeof navigator !== 'undefined' && 
+    (navigator.userAgent.includes('Mac') || navigator.platform.includes('Mac'))
+}
 
 export function getKeyboardMappingStr(): string {
-  let htmlStr = '<div class="pk-help-title">Tilde characters</div>'
+  let htmlStr = ''
+  
+  const universalKbd = '<kbd>⌃ Ctrl</kbd> + <kbd>⌥ Opt</kbd> '
 
-  for (const [key, value] of Object.entries(tilde)) {
-    const kbd = '<kbd>Ctrl</kbd> + <kbd>Alt</kbd> '
-    htmlStr += `<div class="pk-help-row">${value} : <code>${kbd} + ${key}</code></div>`
+  // Build a reverse map for universal codes for easier lookup by character
+  const reverseUniversal: Record<string, string> = {}
+  for (const [key, val] of Object.entries(universalCodes)) {
+    reverseUniversal[val] = key.replace('Key', '').replace('Comma', ',').replace('Period', '.').replace('Slash', '/')
   }
 
-  htmlStr += '<div class="pk-help-title">Underdot characters</div>'
-  for (const [key, value] of Object.entries(underdot)) {
-    const kbd = '<kbd>Alt</kbd> '
-    htmlStr += `<div class="pk-help-row">${value} : <code>${kbd} + ${key}</code></div>`
+  const renderSection = (title: string, data: Record<string, string>, primaryKbd: string) => {
+    let sectionHtml = `<div class="pk-help-title">${title}</div>`
+    for (const [key, value] of Object.entries(data)) {
+      const uniKey = reverseUniversal[value] || '?'
+      sectionHtml += `
+        <div class="pk-help-row">
+          <div class="flex items-center gap-3">
+            <button class="pk-insert-btn" data-char="${value}" title="Insert ${value}">
+              <span class="pointer-events-none">+</span>
+            </button>
+            <span class="font-serif text-lg">${value}</span>
+          </div>
+          <div class="flex flex-col items-end">
+            <code>${primaryKbd} + ${key}</code>
+            <code class="text-[9px] opacity-40 mt-0.5">${universalKbd} + ${uniKey}</code>
+          </div>
+        </div>`
+    }
+    return sectionHtml
   }
 
-  htmlStr += '<div class="pk-help-title">Overdot characters</div>'
-  for (const [key, value] of Object.entries(overdot)) {
-    const kbd = '<kbd>Ctrl</kbd> '
-    htmlStr += `<div class="pk-help-row">${value} : <code>${kbd} + ${key}</code></div>`
-  }
+  const tildeKbd = isMac() ? '<kbd>⌘ Cmd</kbd> + <kbd>⌥ Opt</kbd> ' : '<kbd>Ctrl</kbd> + <kbd>Alt</kbd> '
+  const underdotKbd = isMac() ? '<kbd>⌥ Opt</kbd> ' : '<kbd>Alt</kbd> '
+  const overdotKbd = isMac() ? '<kbd>⌘ Cmd</kbd> ' : '<kbd>Ctrl</kbd> '
+
+  htmlStr += renderSection('Tilde characters', tilde, tildeKbd)
+  htmlStr += renderSection('Underdot characters', underdot, underdotKbd)
+  htmlStr += renderSection('Overdot characters', overdot, overdotKbd)
 
   return htmlStr
 }
