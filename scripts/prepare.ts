@@ -11,6 +11,7 @@ async function stubIndexHtml() {
   const views = [
     'options',
     'popup',
+    'editor',
   ]
 
   for (const view of views) {
