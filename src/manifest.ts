@@ -1,5 +1,5 @@
 import fs from 'fs-extra'
-import type { Manifest } from 'webextension-polyfill'
+// import type { Manifest } from 'webextension-polyfill'
 import type PkgType from '../package.json'
 import { isDev, port, r } from '../scripts/utils'
 
@@ -8,25 +8,23 @@ export async function getManifest() {
 
   // update this file to update this manifest.json
   // can also be conditional based on your need
-  const manifest: Manifest.WebExtensionManifest = {
-    manifest_version: 2,
+  const manifest: any = {
+    manifest_version: 3,
     name: '__MSG_name__',
     version: pkg.version,
     default_locale: 'en',
     description: '__MSG_description__',
-
-    browser_action: {
+    action: {
       default_icon: './assets/icons/favicon-128x128.png',
       default_popup: './dist/popup/index.html',
     },
     options_ui: {
       page: './dist/options/index.html',
       open_in_tab: true,
-      chrome_style: false,
     },
     background: {
-      page: './dist/background/index.html',
-      persistent: false,
+      service_worker: './dist/background/index.mjs',
+      type: 'module',
     },
     icons: {
       16: './assets/icons/favicon-16x16.png',
@@ -37,18 +35,29 @@ export async function getManifest() {
       'tabs',
       'storage',
       'activeTab',
-      'http://*/',
-      'https://*/',
+      'scripting',
+    ],
+    host_permissions: [
+      'http://*/*',
+      'https://*/*',
       'file:///*',
     ],
     content_scripts: [{
       all_frames: true,
-      matches: ['http://*/*', 'https://*/*', 'file:///*'],
+      matches: ['http://*/*', 'https://*/*'],
       js: ['./dist/contentScripts/index.global.js'],
     }],
     web_accessible_resources: [
-      'dist/contentScripts/style.css',
+      {
+        resources: ['dist/contentScripts/style.css', 'assets/*'],
+        matches: ['<all_urls>'],
+      },
     ],
+    content_security_policy: {
+      extension_pages: isDev
+        ? `script-src 'self' http://localhost:${port}; object-src 'self'`
+        : "script-src 'self'; object-src 'self'",
+    },
   }
 
   if (isDev) {
@@ -57,9 +66,6 @@ export async function getManifest() {
     // see src/background/contentScriptHMR.ts
     delete manifest.content_scripts
     manifest.permissions?.push('webNavigation')
-
-    // this is required on dev for Vite script to load
-    manifest.content_security_policy = `script-src \'self\' http://localhost:${port}; object-src \'self\'`
   }
 
   return manifest

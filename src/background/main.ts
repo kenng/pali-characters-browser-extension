@@ -1,3 +1,4 @@
+import browser from 'webextension-polyfill'
 import { sendMessage, onMessage } from 'webext-bridge'
 import { Tabs } from 'webextension-polyfill'
 
@@ -18,7 +19,7 @@ let previousTabId = 0
 
 // communication example: send previous tab title from background page
 // see shim.d.ts for type declaration
-browser.tabs.onActivated.addListener(async({ tabId }) => {
+browser.tabs.onActivated.addListener(async({ tabId }: any) => {
   if (!previousTabId) {
     previousTabId = tabId
     return
