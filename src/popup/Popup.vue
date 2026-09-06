@@ -64,7 +64,7 @@
         @click="openEditor"
       >
         <div class="w-10 h-10 rounded-xl bg-[#E49B0F]/10 flex items-center justify-center text-[#E49B0F] transition-colors group-hover:bg-[#E49B0F] group-hover:text-white">
-          <span class="i-carbon-edit text-xl" />
+          <carbon-edit class="text-xl" />
         </div>
         <div class="text-left">
           <div class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-0.5">
@@ -82,7 +82,7 @@
         @click="activateInTab"
       >
         <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white transition-colors group-hover:bg-white/20">
-          <span class="i-carbon-flash text-xl" />
+          <carbon-flash class="text-xl" />
         </div>
         <div class="text-left">
           <div class="text-xs font-bold uppercase tracking-widest text-white/40 mb-0.5">
@@ -99,7 +99,7 @@
         @click="showHelp = true"
       >
         <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-gray-400 group-hover:text-[#E49B0F] shadow-sm transition-colors">
-          <span class="i-carbon-help text-lg" />
+          <carbon-help class="text-lg" />
         </div>
         <span class="text-sm font-bold text-gray-600 group-hover:text-gray-900">Show Keyboard Shortcuts</span>
       </button>
@@ -117,7 +117,7 @@
             title="Pin to Page as draggable modal"
             @click="pinToPage"
           >
-            <span class="i-carbon-pin text-sm" />
+            <carbon-pin class="text-sm" />
           </button>
         </div>
         <button class="text-xs font-bold text-[#E49B0F] hover:underline" @click="showHelp = false">
@@ -226,12 +226,6 @@ body {
 .font-serif {
   font-family: 'Garamond', 'Georgia', serif;
 }
-
-/* Icons */
-.i-carbon-edit { display: inline-block; width: 1.25em; height: 1.25em; background-color: currentColor; mask: url("https://api.iconify.design/carbon:edit.svg") no-repeat center / contain; }
-.i-carbon-help { display: inline-block; width: 1.25em; height: 1.25em; background-color: currentColor; mask: url("https://api.iconify.design/carbon:help.svg") no-repeat center / contain; }
-.i-carbon-flash { display: inline-block; width: 1.25em; height: 1.25em; background-color: currentColor; mask: url("https://api.iconify.design/carbon:flash.svg") no-repeat center / contain; }
-.i-carbon-pin { display: inline-block; width: 1.25em; height: 1.25em; background-color: currentColor; mask: url("https://api.iconify.design/carbon:pin.svg") no-repeat center / contain; }
 
 /* Help UI Styling in Popup */
 .pk-quick-bar-title {

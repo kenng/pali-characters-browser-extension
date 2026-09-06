@@ -57,6 +57,6 @@ Uppercase letter sequences produce uppercase characters where applicable (e.g. A
 
 PRIVACY
 
-This extension helps you type Pāli characters in the page you’re using. It does not sell your data or require an account.
+This extension helps you type Pāli characters in the page you’re using. It does not sell your data, require an account, or send your keystrokes or page content to any server. It only stores Enable / ITRANS preferences locally in the browser. See docs/privacy-policy.md for the full policy.
 
 Tip: Open the popup → Show Keyboard Shortcuts (or pin the helper) to see every mapping at a glance.

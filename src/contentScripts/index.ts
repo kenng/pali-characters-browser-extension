@@ -24,9 +24,11 @@ onMessage('pali-action', ({ data }) => {
   }
 })
 
-// Handle messages from the injected draggable modal
+// Handle messages from the injected draggable modal (same-document only)
 window.addEventListener('message', (event) => {
-  if (event.data?.type === 'PK_INSERT') {
+  if (event.source !== window || event.origin !== window.location.origin)
+    return
+  if (event.data?.type === 'PK_INSERT' && typeof event.data.char === 'string') {
     console.log('pali-ext: [window] insert char', event.data.char)
     insertCharToActive(event.data.char)
   }

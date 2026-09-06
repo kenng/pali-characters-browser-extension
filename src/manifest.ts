@@ -32,15 +32,12 @@ export async function getManifest() {
       128: 'assets/icons/favicon-128x128.png',
     },
     permissions: [
-      'tabs',
       'storage',
       'activeTab',
-      'scripting',
     ],
     host_permissions: [
       'http://*/*',
       'https://*/*',
-      'file:///*',
     ],
     content_scripts: [{
       all_frames: true,
@@ -65,7 +62,7 @@ export async function getManifest() {
     // we use a background script to always inject the latest version
     // see src/background/contentScriptHMR.ts
     delete manifest.content_scripts
-    manifest.permissions?.push('webNavigation')
+    manifest.permissions?.push('webNavigation', 'scripting')
   }
 
   return manifest

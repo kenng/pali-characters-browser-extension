@@ -17,7 +17,7 @@
           @click="openExtensionInTab"
         >
           <div class="w-10 h-10 rounded-xl bg-[#E49B0F]/10 flex items-center justify-center text-[#E49B0F] transition-colors group-hover:bg-[#E49B0F] group-hover:text-white">
-            <span class="i-carbon-launch text-xl" />
+            <carbon-launch class="text-xl" />
           </div>
           <div>
             <div class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-0.5">Quick Access</div>
@@ -30,7 +30,7 @@
           @click="openEditor"
         >
           <div class="w-10 h-10 rounded-xl bg-[#E49B0F]/10 flex items-center justify-center text-[#E49B0F] transition-colors group-hover:bg-[#E49B0F] group-hover:text-white">
-            <span class="i-carbon-edit text-xl" />
+            <carbon-edit class="text-xl" />
           </div>
           <div>
             <div class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-0.5">Focus Mode</div>
@@ -69,6 +69,4 @@ body {
 .font-serif {
   font-family: 'Garamond', 'Georgia', serif;
 }
-.i-carbon-launch { display: inline-block; width: 1.25em; height: 1.25em; background-color: currentColor; mask: url("https://api.iconify.design/carbon:launch.svg") no-repeat center / contain; }
-.i-carbon-edit { display: inline-block; width: 1.25em; height: 1.25em; background-color: currentColor; mask: url("https://api.iconify.design/carbon:edit.svg") no-repeat center / contain; }
 </style>

@@ -414,7 +414,7 @@ function setScript() {
       e.preventDefault() // Prevent focus loss
       const char = btn.getAttribute('data-char')
       if (char) {
-        window.postMessage({ type: 'PK_INSERT', char }, '*')
+        window.postMessage({ type: 'PK_INSERT', char }, window.location.origin)
       }
     }
   })

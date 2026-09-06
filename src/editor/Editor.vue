@@ -1,76 +1,62 @@
 <template>
-  <div class="min-h-screen flex flex-col bg-[#FAF9F6] text-[#2D3436] font-sans transition-colors duration-500 overflow-x-hidden">
+  <div
+    class="min-h-screen flex flex-col bg-[#FAF9F6] text-[#2D3436] font-sans transition-colors duration-500 overflow-x-hidden">
     <!-- Sophisticated Header -->
-    <nav 
-      class="fixed top-0 left-0 right-0 z-40 px-6 py-4 flex items-center justify-between transition-all duration-500"
-      :class="[isScrolled ? 'bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-100' : 'bg-transparent']"
-    >
+    <nav class="fixed top-0 left-0 right-0 z-40 px-6 py-4 flex items-center justify-between transition-all duration-500"
+      :class="[isScrolled ? 'bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-100' : 'bg-transparent']">
       <div class="flex items-center gap-3 group cursor-default">
-        <div class="w-9 h-9 bg-[#E49B0F] rounded-xl flex items-center justify-center text-white font-serif italic text-lg shadow-lg shadow-[#E49B0F]/20 group-hover:rotate-12 transition-transform duration-500">ā</div>
+        <div
+          class="w-9 h-9 bg-[#E49B0F] rounded-xl flex items-center justify-center text-white font-serif italic text-lg shadow-lg shadow-[#E49B0F]/20 group-hover:rotate-12 transition-transform duration-500">
+          ā</div>
         <div>
           <h1 class="text-sm font-bold tracking-tight text-gray-900 leading-none">Pāli Zen</h1>
           <p class="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mt-1">Focused Writing</p>
         </div>
       </div>
-      
+
       <div class="flex items-center gap-2 md:gap-4">
-        <button 
-          @click="toggleFullscreen"
+        <button @click="toggleFullscreen"
           class="p-2 rounded-full hover:bg-white hover:shadow-sm transition-all text-gray-400 hover:text-[#E49B0F]"
-          :class="{ 'text-[#E49B0F]': isFullscreen }"
-          title="Toggle Full Screen"
-        >
-          <span :class="isFullscreen ? 'i-carbon-minimize' : 'i-carbon-maximize'" class="text-xl" />
+          :class="{ 'text-[#E49B0F]': isFullscreen }" title="Toggle Full Screen">
+          <carbon-minimize v-if="isFullscreen" class="text-xl" />
+          <carbon-maximize v-else class="text-xl" />
         </button>
-        <button 
-          @click="isPinned = !isPinned"
+        <button @click="isPinned = !isPinned"
           class="hidden md:flex p-2 rounded-full hover:bg-white hover:shadow-sm transition-all text-gray-400 hover:text-[#E49B0F]"
-          :class="{ 'text-[#E49B0F] bg-white shadow-sm': isPinned }"
-          title="Pin Helper to Sidebar"
-        >
-          <span class="i-carbon-pin text-xl" :class="{ 'rotate-45': isPinned }" />
+          :class="{ 'text-[#E49B0F] bg-white shadow-sm': isPinned }" title="Pin Helper to Sidebar">
+          <carbon-pin class="text-xl" :class="{ 'rotate-45': isPinned }" />
         </button>
-        <button 
-          @click="showHelp = !showHelp"
+        <button @click="showHelp = !showHelp"
           class="p-2 rounded-full hover:bg-white hover:shadow-sm transition-all text-gray-400 hover:text-[#E49B0F]"
-          title="Keyboard Shortcuts"
-        >
-          <span class="i-carbon-keyboard text-xl" />
+          title="Keyboard Shortcuts">
+          <carbon-keyboard class="text-xl" />
         </button>
-        <button 
-          @click="copyToClipboard" 
-          class="flex items-center gap-2 px-6 py-2 bg-[#2D3436] text-white rounded-full hover:bg-black transition-all shadow-md active:scale-95 text-xs font-bold uppercase tracking-widest leading-none h-[40px]"
-        >
-          <span class="i-carbon-copy" />
+        <button @click="copyToClipboard"
+          class="flex items-center gap-2 px-6 py-2 bg-[#2D3436] text-white rounded-full hover:bg-black transition-all shadow-md active:scale-95 text-xs font-bold uppercase tracking-widest leading-none h-[40px]">
+          <carbon-copy />
           <span class="hidden md:inline">Copy All</span>
         </button>
-        <button 
-          @click="clearText" 
+        <button @click="clearText"
           class="p-2 rounded-full hover:bg-red-50 text-gray-300 hover:text-red-400 transition-colors"
-          title="Clear everything"
-        >
-          <span class="i-carbon-trash-can text-xl" />
+          title="Clear everything">
+          <carbon-trash-can class="text-xl" />
         </button>
       </div>
     </nav>
 
     <div class="flex flex-1 relative">
       <!-- Content Area -->
-      <main 
-        class="flex-1 flex flex-col items-center pt-24 pb-12 px-6 transition-all duration-500 ease-in-out"
-        :class="[isPinned ? 'md:mr-[320px]' : 'w-full max-w-4xl mx-auto']"
-      >
+      <main class="flex-1 flex flex-col items-center pt-24 pb-12 px-6 transition-all duration-500 ease-in-out"
+        :class="[isPinned ? 'md:mr-[320px]' : 'w-full max-w-4xl mx-auto']">
         <!-- Premium Character Toolbar -->
-        <div class="w-full flex justify-center mb-12 animate-fade-in transition-all duration-700" :class="[isScrolled ? 'opacity-40 hover:opacity-100' : 'opacity-100']">
-          <div class="bg-white/90 backdrop-blur-xl p-2 rounded-[28px] shadow-[0_10px_40px_rgba(228,155,15,0.08)] border border-white/50 flex flex-wrap gap-1 items-center justify-center px-4 py-2">
-            <div v-for="(group, name) in charGroups" :key="name" class="flex gap-0.5 items-center px-2 py-1 border-r border-gray-100 last:border-0">
-              <button
-                v-for="char in group"
-                :key="char"
-                @mousedown.prevent
-                @click="insertChar(char)"
-                class="w-8 h-8 md:w-11 md:h-11 flex items-center justify-center hover:bg-[#E49B0F]/10 hover:text-[#E49B0F] rounded-xl transition-all text-lg md:text-xl font-medium active:scale-90"
-              >
+        <div class="w-full flex justify-center mb-12 animate-fade-in transition-all duration-700"
+          :class="[isScrolled ? 'opacity-40 hover:opacity-100' : 'opacity-100']">
+          <div
+            class="bg-white/90 backdrop-blur-xl p-2 rounded-[28px] shadow-[0_10px_40px_rgba(228,155,15,0.08)] border border-white/50 flex flex-wrap gap-1 items-center justify-center px-4 py-2">
+            <div v-for="(group, name) in charGroups" :key="name"
+              class="flex gap-0.5 items-center px-2 py-1 border-r border-gray-100 last:border-0">
+              <button v-for="char in group" :key="char" @mousedown.prevent @click="insertChar(char)"
+                class="w-8 h-8 md:w-11 md:h-11 flex items-center justify-center hover:bg-[#E49B0F]/10 hover:text-[#E49B0F] rounded-xl transition-all text-lg md:text-xl font-medium active:scale-90">
                 {{ char }}
               </button>
             </div>
@@ -79,38 +65,33 @@
 
         <!-- Writing Column -->
         <div class="w-full max-w-2xl flex-1 flex flex-col">
-          <textarea
-            ref="textareaRef"
-            v-model="text"
-            placeholder="Peace begins with the first word..."
+          <textarea ref="textareaRef" v-model="text" placeholder="Peace begins with the first word..."
             class="flex-1 w-full bg-transparent p-0 text-2xl md:text-3xl leading-[1.7] resize-none focus:outline-none font-serif text-[#2D3436] placeholder-[#E49B0F]/20 min-h-[60vh] pb-32"
-            @keydown="handleKeydown"
-          ></textarea>
+            @keydown="handleKeydown"></textarea>
         </div>
       </main>
 
       <!-- Pinned Sidebar -->
-      <aside 
-        v-if="isPinned"
-        class="hidden md:flex fixed right-0 top-0 bottom-0 w-[320px] bg-white border-l border-gray-100 shadow-2xl z-20 flex-col pt-24 px-8 overflow-y-auto custom-scrollbar animate-slide-left"
-      >
+      <aside v-if="isPinned"
+        class="hidden md:flex fixed right-0 top-0 bottom-0 w-[320px] bg-white border-l border-gray-100 shadow-2xl z-20 flex-col pt-24 px-8 overflow-y-auto custom-scrollbar animate-slide-left">
         <div class="flex justify-between items-center mb-8">
           <div>
             <h2 class="text-lg font-bold tracking-tight">Quick Reference</h2>
             <p class="text-[9px] text-[#E49B0F] font-bold uppercase tracking-[0.2em] mt-1">Personal Assistant</p>
           </div>
           <button @click="isPinned = false" class="p-1.5 rounded-full hover:bg-gray-50 text-gray-300 transition-colors">
-            <span class="i-carbon-close text-lg" />
+            <carbon-close class="text-lg" />
           </button>
         </div>
         <div v-html="keyboardHelpContent" @click="handleHelperClick" class="text-sm"></div>
         <div class="mt-8 p-5 bg-amber-50 rounded-2xl border border-amber-100 mb-8">
           <div class="flex gap-2 text-amber-800 font-bold text-[10px] mb-1 uppercase tracking-wider">
-            <span class="i-carbon-information text-xs" />
+            <carbon-information class="text-xs" />
             macOS Tip
           </div>
           <p class="text-[11px] text-amber-700 leading-relaxed">
-            <code>⌘ Cmd + N</code> opens a new window — use <code>⌃ Ctrl + ⌘ Cmd + ⌥ Opt + N</code> for <strong>ñ</strong> instead.
+            <code>⌘ Cmd + N</code> opens a new window — use <code>⌃ Ctrl + ⌘ Cmd + ⌥ Opt + N</code> for
+            <strong>ñ</strong> instead.
           </p>
         </div>
       </aside>
@@ -118,48 +99,55 @@
 
     <!-- Sophisticated Overlay Components -->
     <Transition name="fade">
-      <div v-if="showHelp" class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-[#2D3436]/10 backdrop-blur-md" @click.self="showHelp = false">
-        <div class="bg-white rounded-[40px] shadow-[0_40px_100px_rgba(228,155,15,0.15)] max-w-lg w-full p-10 animate-scale-up border border-white flex flex-col h-full max-h-[85vh]">
+      <div v-if="showHelp"
+        class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-[#2D3436]/10 backdrop-blur-md"
+        @click.self="showHelp = false">
+        <div
+          class="bg-white rounded-[40px] shadow-[0_40px_100px_rgba(228,155,15,0.15)] max-w-lg w-full p-10 animate-scale-up border border-white flex flex-col h-full max-h-[85vh]">
           <div class="flex justify-between items-center mb-10">
             <div>
               <h2 class="text-2xl font-bold tracking-tight">Keyboard Guide</h2>
-              <p class="text-[10px] text-[#E49B0F] font-bold uppercase tracking-[0.2em] mt-2">The Golden Rule of Efficiency</p>
+              <p class="text-[10px] text-[#E49B0F] font-bold uppercase tracking-[0.2em] mt-2">The Golden Rule of
+                Efficiency</p>
             </div>
             <div class="flex items-center gap-2">
-              <button 
-                @click="isPinned = !isPinned; showHelp = false" 
+              <button @click="isPinned = !isPinned; showHelp = false"
                 class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-xl text-gray-400 hover:text-[#E49B0F] transition-colors"
-                title="Pin to sidebar"
-              >
-                <span class="i-carbon-pin text-xl" />
+                title="Pin to sidebar">
+                <carbon-pin class="text-xl" />
               </button>
-              <button @click="showHelp = false" class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-xl text-gray-400 hover:text-[#E49B0F] transition-colors">&times;</button>
+              <button @click="showHelp = false"
+                class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-xl text-gray-400 hover:text-[#E49B0F] transition-colors">&times;</button>
             </div>
           </div>
-          
+
           <div class="flex-1 overflow-y-auto pr-4 custom-scrollbar space-y-8">
             <div v-html="keyboardHelpContent" @click="handleHelperClick"></div>
-            
+
             <div class="mt-8 p-6 bg-amber-50 rounded-2xl border border-amber-100">
               <div class="flex gap-3 text-amber-800 font-bold text-sm mb-2">
-                <span class="i-carbon-information" />
+                <carbon-information />
                 macOS Conflict Tip
               </div>
               <p class="text-xs text-amber-700 leading-relaxed">
-                On macOS, <code>⌘ Cmd + N</code> opens a new window. For <strong>ñ</strong>, use <code>⌃ Ctrl + ⌘ Cmd + ⌥ Opt + N</code> (or Full Screen to reduce other conflicts).
+                On macOS, <code>⌘ Cmd + N</code> opens a new window. For <strong>ñ</strong>, use
+                <code>⌃ Ctrl + ⌘ Cmd + ⌥ Opt + N</code> (or Full Screen to reduce other conflicts).
               </p>
             </div>
           </div>
-          
-          <button @click="showHelp = false" class="mt-10 w-full py-5 bg-[#E49B0F] hover:bg-[#D48B00] text-white rounded-3xl font-bold transition-all shadow-xl shadow-[#E49B0F]/20 active:scale-[0.97]">I've got it</button>
+
+          <button @click="showHelp = false"
+            class="mt-10 w-full py-5 bg-[#E49B0F] hover:bg-[#D48B00] text-white rounded-3xl font-bold transition-all shadow-xl shadow-[#E49B0F]/20 active:scale-[0.97]">I've
+            got it</button>
         </div>
       </div>
     </Transition>
 
     <!-- Copy Status Toast -->
     <Transition name="slide-up">
-      <div v-if="showToast" class="fixed bottom-12 left-1/2 -translate-x-1/2 bg-[#E49B0F] text-white px-8 py-4 rounded-full shadow-2xl shadow-[#E49B0F]/30 flex items-center gap-3 font-bold text-sm animate-fade-in z-[60] border border-white/20">
-        <span class="i-carbon-checkmark" />
+      <div v-if="showToast"
+        class="fixed bottom-12 left-1/2 -translate-x-1/2 bg-[#E49B0F] text-white px-8 py-4 rounded-full shadow-2xl shadow-[#E49B0F]/30 flex items-center gap-3 font-bold text-sm animate-fade-in z-[60] border border-white/20">
+        <carbon-checkmark />
         Copied to clipboard
       </div>
     </Transition>
@@ -302,7 +290,8 @@ onUnmounted(() => {
 
 <style>
 /* Reset & Modern Base */
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   background-color: #FAF9F6;
@@ -319,6 +308,7 @@ textarea::selection,
   background-color: rgba(228, 155, 15, 0.35);
   color: #2D3436;
 }
+
 textarea::-moz-selection,
 ::-moz-selection {
   background-color: rgba(228, 155, 15, 0.35);
@@ -326,28 +316,65 @@ textarea::-moz-selection,
 }
 
 /* Transitions */
-.fade-enter-active, .fade-leave-active { transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-.slide-up-enter-active, .slide-up-leave-active { transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
-.slide-up-enter-from, .slide-up-leave-to { transform: translate(-50%, 100%); opacity: 0; }
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.slide-up-enter-from,
+.slide-up-leave-to {
+  transform: translate(-50%, 100%);
+  opacity: 0;
+}
 
 @keyframes slide-left {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
+
 .animate-slide-left {
   animation: slide-left 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Custom Scrollbar */
-.custom-scrollbar::-webkit-scrollbar { width: 5px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #E5E7EB; border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #E5E7EB;
+  border-radius: 10px;
+}
 
 /* Typography */
-.font-sans { font-family: 'Inter', -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, sans-serif; }
-.font-serif { font-family: 'Garamond', 'Georgia', serif; }
+.font-sans {
+  font-family: 'Inter', -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, sans-serif;
+}
+
+.font-serif {
+  font-family: 'Garamond', 'Georgia', serif;
+}
 
 /* Help UI Styling */
 .pk-help-title {
@@ -358,6 +385,7 @@ textarea::-moz-selection,
   color: #D1D5DB;
   margin: 32px 0 12px 4px;
 }
+
 .pk-help-row {
   display: flex;
   align-items: flex-start;
@@ -368,20 +396,24 @@ textarea::-moz-selection,
   border-radius: 12px;
   transition: background 0.2s;
 }
+
 .pk-help-row:hover {
   background: #E49B0F05;
 }
+
 .pk-help-char {
   display: flex;
   align-items: center;
   gap: 12px;
   flex-shrink: 0;
 }
+
 .pk-help-glyph {
   font-family: Garamond, Georgia, serif;
   font-size: 1.125rem;
   color: #1F2937;
 }
+
 .pk-help-keys {
   flex: 1;
   min-width: 0;
@@ -390,6 +422,7 @@ textarea::-moz-selection,
   align-items: flex-end;
   text-align: right;
 }
+
 .pk-help-keys code {
   display: block;
   max-width: 100%;
@@ -399,11 +432,13 @@ textarea::-moz-selection,
   line-height: 1.7;
   white-space: normal;
 }
+
 .pk-help-keys-secondary {
   margin-top: 2px;
   font-size: 8px !important;
   opacity: 0.4;
 }
+
 .pk-help-row kbd {
   display: inline-block;
   background: #F3F4F6;
@@ -415,7 +450,10 @@ textarea::-moz-selection,
   font-size: 11px;
   white-space: nowrap;
 }
-.pk-help-row .opacity-40 { opacity: 0.4; }
+
+.pk-help-row .opacity-40 {
+  opacity: 0.4;
+}
 
 .pk-quick-bar-title {
   font-size: 10px;
@@ -471,6 +509,7 @@ textarea::-moz-selection,
   border: 1px solid transparent;
   cursor: pointer;
 }
+
 .pk-insert-btn:hover {
   background: #E49B0F;
   color: white;
@@ -478,20 +517,9 @@ textarea::-moz-selection,
   border-color: #E49B0F;
 }
 
-/* Icons */
-.i-carbon-keyboard { display: inline-block; width: 1.25em; height: 1.25em; background-color: currentColor; mask: url("https://api.iconify.design/carbon:keyboard.svg") no-repeat center / contain; }
-.i-carbon-copy { display: inline-block; width: 1.25em; height: 1.25em; background-color: currentColor; mask: url("https://api.iconify.design/carbon:copy.svg") no-repeat center / contain; }
-.i-carbon-trash-can { display: inline-block; width: 1.25em; height: 1.25em; background-color: currentColor; mask: url("https://api.iconify.design/carbon:trash-can.svg") no-repeat center / contain; }
-.i-carbon-checkmark { display: inline-block; width: 1.25em; height: 1.25em; background-color: currentColor; mask: url("https://api.iconify.design/carbon:checkmark.svg") no-repeat center / contain; }
-.i-carbon-edit { display: inline-block; width: 1.25em; height: 1.25em; background-color: currentColor; mask: url("https://api.iconify.design/carbon:edit.svg") no-repeat center / contain; }
-.i-carbon-help { display: inline-block; width: 1.25em; height: 1.25em; background-color: currentColor; mask: url("https://api.iconify.design/carbon:help.svg") no-repeat center / contain; }
-.i-carbon-maximize { display: inline-block; width: 1.25em; height: 1.25em; background-color: currentColor; mask: url("https://api.iconify.design/carbon:maximize.svg") no-repeat center / contain; }
-.i-carbon-minimize { display: inline-block; width: 1.25em; height: 1.25em; background-color: currentColor; mask: url("https://api.iconify.design/carbon:minimize.svg") no-repeat center / contain; }
-.i-carbon-information { display: inline-block; width: 1.25em; height: 1.25em; background-color: currentColor; mask: url("https://api.iconify.design/carbon:information.svg") no-repeat center / contain; }
-.i-carbon-pin { display: inline-block; width: 1.25em; height: 1.25em; background-color: currentColor; mask: url("https://api.iconify.design/carbon:pin.svg") no-repeat center / contain; }
-.i-carbon-close { display: inline-block; width: 1.25em; height: 1.25em; background-color: currentColor; mask: url("https://api.iconify.design/carbon:close.svg") no-repeat center / contain; }
-
 @media (max-width: 768px) {
-  textarea { line-height: 2 !important; }
+  textarea {
+    line-height: 2 !important;
+  }
 }
 </style>

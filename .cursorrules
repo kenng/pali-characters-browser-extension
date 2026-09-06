@@ -21,7 +21,7 @@ Built output lives under `extension/` (load this folder in the browser). Do not 
 1. **Keyboard input**: content script → `keydown-listener` → `pali-keyboard.onKeyDown` → `text-helper` insert into active element (input/textarea/contenteditable, including same-origin iframes).
 2. **Popup → page**: `webext-bridge` message channel `pali-action` with `MsgType` from `src/logic/constant.ts` (`HELP`, `RERUN`, `ACTIVATE`). Content script handles in `contentScripts/index.ts`.
 3. **Pinned help modal**: injects UI; char clicks use `window.postMessage` (`PK_INSERT`) or bridge (`PK_INSERT_INTERNAL`) → `insertCharToActive`.
-4. **Settings**: `browser.storage.local` key `isGlobalEnabled` (default true). Content script reads it on load; popup toggles it.
+4. **Settings**: `browser.storage.local` keys `isGlobalEnabled` and `isItransEnabled` (defaults true). Content script reads them on load; popup toggles them. No remote user-data collection.
 
 ## Where to change what
 
