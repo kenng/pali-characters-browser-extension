@@ -18,12 +18,6 @@ Grants temporary access to the current tab when the user opens the toolbar popup
 
 ---
 
-## Host permission (`http://*/*`, `https://*/*`)
-
-Required so the content script can run on pages where the user is writing — websites and local HTML files — and insert Pāli diacritics into focused text fields, textareas, and contenteditable areas via keyboard shortcuts and the pinned helper. Access is only used to provide that typing feature on the current page; page content is not collected, stored, or sent to any server.
-
----
-
 ## tabs
 
 Used to identify the active tab so popup actions (activate page, re-run content script, open Zen Editor / help links) apply to the correct tab, and to open extension pages in a new tab. Tab URLs/titles are not collected or transmitted.

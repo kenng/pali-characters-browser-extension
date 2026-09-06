@@ -35,10 +35,6 @@ export async function getManifest() {
       'storage',
       'activeTab',
     ],
-    host_permissions: [
-      'http://*/*',
-      'https://*/*',
-    ],
     content_scripts: [{
       all_frames: true,
       matches: ['http://*/*', 'https://*/*'],
