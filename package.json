@@ -23,7 +23,9 @@
     "clear": "rimraf extension/dist extension/manifest.json extension.*",
     "lint": "eslint 'src/**/*.{json,ts,js,vue}'",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "zip-build": "pnpm run build && pnpm run zip",
+    "zip": "rm -f extension.zip && (cd extension && zip -r ../extension.zip .)"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^0.8.0",
