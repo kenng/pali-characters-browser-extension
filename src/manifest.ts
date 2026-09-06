@@ -15,21 +15,21 @@ export async function getManifest() {
     default_locale: 'en',
     description: '__MSG_description__',
     action: {
-      default_icon: './assets/icons/favicon-128x128.png',
-      default_popup: './dist/popup/index.html',
+      default_icon: 'assets/icons/favicon-128x128.png',
+      default_popup: 'dist/popup/index.html',
     },
     options_ui: {
-      page: './dist/editor/index.html',
+      page: 'dist/editor/index.html',
       open_in_tab: true,
     },
     background: {
-      service_worker: './dist/background/index.mjs',
+      service_worker: 'dist/background/index.mjs',
       type: 'module',
     },
     icons: {
-      16: './assets/icons/favicon-16x16.png',
-      48: './assets/icons/favicon-48x48.png',
-      128: './assets/icons/favicon-128x128.png',
+      16: 'assets/icons/favicon-16x16.png',
+      48: 'assets/icons/favicon-48x48.png',
+      128: 'assets/icons/favicon-128x128.png',
     },
     permissions: [
       'tabs',
@@ -45,7 +45,7 @@ export async function getManifest() {
     content_scripts: [{
       all_frames: true,
       matches: ['http://*/*', 'https://*/*'],
-      js: ['./dist/contentScripts/index.global.js'],
+      js: ['dist/contentScripts/index.global.js'],
     }],
     web_accessible_resources: [
       {
@@ -56,7 +56,7 @@ export async function getManifest() {
     content_security_policy: {
       extension_pages: isDev
         ? `script-src 'self' http://localhost:${port}; object-src 'self'`
-        : "script-src 'self'; object-src 'self'",
+        : 'script-src \'self\'; object-src \'self\'',
     },
   }
 
