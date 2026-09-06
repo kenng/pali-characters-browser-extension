@@ -2,7 +2,8 @@
   <main class="w-[360px] bg-[#FAF9F6] p-6 font-sans text-[#2D3436] relative overflow-hidden">
     <div class="flex items-center justify-between mb-8">
       <div class="flex items-center gap-3 cursor-default group">
-        <div class="w-8 h-8 bg-[#E49B0F] rounded-xl flex items-center justify-center text-white font-serif italic text-base shadow-lg transition-transform group-hover:rotate-6">
+        <div
+          class="w-8 h-8 bg-[#E49B0F] rounded-xl flex items-center justify-center text-white font-serif italic text-base shadow-lg transition-transform group-hover:rotate-6">
           ā
         </div>
         <div>
@@ -18,24 +19,16 @@
       <!-- Global Toggle -->
       <div class="flex items-center gap-2">
         <span class="text-[9px] font-bold uppercase tracking-tighter text-gray-400">Enable</span>
-        <button
-          class="w-8 h-4 rounded-full transition-colors relative"
-          :class="isGlobalEnabled ? 'bg-[#E49B0F]' : 'bg-gray-200'"
-          title="Enable Pāli input on all pages"
-          @click="toggleGlobal"
-        >
-          <div
-            class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform shadow-sm"
-            :class="{ 'translate-x-4': isGlobalEnabled }"
-          ></div>
+        <button class="w-8 h-4 rounded-full transition-colors relative"
+          :class="isGlobalEnabled ? 'bg-[#E49B0F]' : 'bg-gray-200'" title="Enable Pāli input on all pages"
+          @click="toggleGlobal">
+          <div class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full shadow-sm transform transition-transform"
+            :class="{ 'translate-x-4': isGlobalEnabled }"></div>
         </button>
       </div>
     </div>
 
-    <div
-      class="flex items-center justify-between mb-6 -mt-4"
-      :class="{ 'opacity-40': !isGlobalEnabled }"
-    >
+    <div class="flex items-center justify-between mb-6 -mt-4" :class="{ 'opacity-40': !isGlobalEnabled }">
       <div>
         <div class="text-[10px] font-bold text-gray-700">
           ITRANS
@@ -44,26 +37,21 @@
           Type aa → ā, ;n → ṅ, ;m → ṁ
         </div>
       </div>
-      <button
-        class="w-8 h-4 rounded-full transition-colors relative"
-        :class="effectiveItransEnabled ? 'bg-[#E49B0F]' : 'bg-gray-200'"
-        :disabled="!isGlobalEnabled"
+      <button class="w-8 h-4 rounded-full transition-colors relative"
+        :class="effectiveItransEnabled ? 'bg-[#E49B0F]' : 'bg-gray-200'" :disabled="!isGlobalEnabled"
         :title="isGlobalEnabled ? 'Enable ITRANS sequences' : 'Enable the extension first to use ITRANS'"
-        @click="toggleItrans"
-      >
-        <div
-          class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform shadow-sm"
-          :class="{ 'translate-x-4': effectiveItransEnabled }"
-        ></div>
+        @click="toggleItrans">
+        <div class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full shadow-sm transform transition-transform"
+          :class="{ 'translate-x-4': effectiveItransEnabled }"></div>
       </button>
     </div>
 
     <div v-if="!showHelp" class="flex flex-col gap-3 animate-fade-in">
       <button
         class="group relative w-full py-4 px-4 bg-white border border-gray-100 rounded-2xl transition-all duration-300 hover:shadow-[0_10px_30px_rgba(228,155,15,0.1)] hover:-translate-y-1 flex items-center gap-4 overflow-hidden shadow-sm"
-        @click="openEditor"
-      >
-        <div class="w-10 h-10 rounded-xl bg-[#E49B0F]/10 flex items-center justify-center text-[#E49B0F] transition-colors group-hover:bg-[#E49B0F] group-hover:text-white">
+        @click="openEditor">
+        <div
+          class="w-10 h-10 rounded-xl bg-[#E49B0F]/10 flex items-center justify-center text-[#E49B0F] transition-colors group-hover:bg-[#E49B0F] group-hover:text-white">
           <carbon-edit class="text-xl" />
         </div>
         <div class="text-left">
@@ -76,12 +64,11 @@
         </div>
       </button>
 
-      <button
-        v-if="!isGlobalEnabled"
+      <button v-if="!isGlobalEnabled"
         class="group w-full py-4 px-4 bg-[#2D3436] text-white rounded-2xl transition-all hover:bg-black flex items-center gap-4 shadow-lg shadow-black/10 active:scale-[0.98]"
-        @click="activateInTab"
-      >
-        <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white transition-colors group-hover:bg-white/20">
+        @click="activateInTab">
+        <div
+          class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white transition-colors group-hover:bg-white/20">
           <carbon-flash class="text-xl" />
         </div>
         <div class="text-left">
@@ -96,9 +83,9 @@
 
       <button
         class="group w-full py-3 px-4 bg-gray-50 hover:bg-gray-100 rounded-2xl transition-all flex items-center gap-3"
-        @click="showHelp = true"
-      >
-        <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-gray-400 group-hover:text-[#E49B0F] shadow-sm transition-colors">
+        @click="showHelp = true">
+        <div
+          class="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-gray-400 group-hover:text-[#E49B0F] shadow-sm transition-colors">
           <carbon-help class="text-lg" />
         </div>
         <span class="text-sm font-bold text-gray-600 group-hover:text-gray-900">Show Keyboard Shortcuts</span>
@@ -114,9 +101,7 @@
           </h4>
           <button
             class="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-amber-100 text-amber-600 transition-colors"
-            title="Pin to Page as draggable modal"
-            @click="pinToPage"
-          >
+            title="Pin to Page as draggable modal" @click="pinToPage">
             <carbon-pin class="text-sm" />
           </button>
         </div>
@@ -124,11 +109,8 @@
           Back
         </button>
       </div>
-      <div
-        class="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar text-[11px]"
-        @mousedown="handleHelpClick"
-        v-html="keyboardHelpContent"
-      ></div>
+      <div class="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar text-[11px]" @mousedown="handleHelpClick"
+        v-html="keyboardHelpContent"></div>
     </div>
 
     <footer class="mt-8 pt-4 border-t border-gray-100 flex justify-center">
@@ -154,7 +136,7 @@ const keyboardHelpContent = computed(() => getKeyboardMappingStr())
 /** ITRANS is only active when the extension is enabled. */
 const effectiveItransEnabled = computed(() => isGlobalEnabled.value && isItransEnabled.value)
 
-onMounted(async() => {
+onMounted(async () => {
   const res = await browser.storage.local.get(['isGlobalEnabled', 'isItransEnabled'])
   if (res.isGlobalEnabled !== undefined)
     isGlobalEnabled.value = res.isGlobalEnabled
@@ -220,9 +202,11 @@ body {
   margin: 0;
   padding: 0;
 }
+
 .font-sans {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
+
 .font-serif {
   font-family: 'Garamond', 'Georgia', serif;
 }
@@ -236,12 +220,14 @@ body {
   color: #9CA3AF;
   margin-top: 1rem;
 }
+
 .pk-quick-bar {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   margin-bottom: 1.5rem;
 }
+
 .pk-quick-char {
   width: 28px;
   height: 28px;
@@ -257,6 +243,7 @@ body {
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   color: #374151;
 }
+
 .pk-quick-char:hover {
   background: #E49B0F;
   color: white;
@@ -273,6 +260,7 @@ body {
   margin-top: 2rem;
   margin-bottom: 0.5rem;
 }
+
 .pk-help-row {
   display: flex;
   align-items: flex-start;
@@ -284,7 +272,10 @@ body {
   transition: background 0.2s;
   border-radius: 8px;
 }
-.pk-help-row:hover { background: #E49B0F08; }
+
+.pk-help-row:hover {
+  background: #E49B0F08;
+}
 
 .pk-help-char {
   display: flex;
@@ -292,11 +283,13 @@ body {
   gap: 10px;
   flex-shrink: 0;
 }
+
 .pk-help-glyph {
   font-family: Garamond, Georgia, serif;
   font-size: 1rem;
   color: #1F2937;
 }
+
 .pk-help-keys {
   flex: 1;
   min-width: 0;
@@ -305,6 +298,7 @@ body {
   align-items: flex-end;
   text-align: right;
 }
+
 .pk-help-keys code {
   display: block;
   max-width: 100%;
@@ -314,11 +308,13 @@ body {
   line-height: 1.7;
   white-space: normal;
 }
+
 .pk-help-keys-secondary {
   margin-top: 2px;
   font-size: 7px !important;
   opacity: 0.4;
 }
+
 .pk-help-row kbd {
   display: inline-block;
   background: #F3F4F6;
@@ -329,7 +325,11 @@ body {
   font-weight: bold;
   white-space: nowrap;
 }
-.pk-help-row .opacity-40 { opacity: 0.4; }
+
+.pk-help-row .opacity-40 {
+  opacity: 0.4;
+}
+
 .pk-insert-btn {
   width: 24px;
   height: 24px;
@@ -345,16 +345,54 @@ body {
   font-size: 12px;
   transition: all 0.2s;
 }
-.pk-insert-btn:hover { background: #E49B0F; color: white; transform: rotate(90deg) scale(1.1); }
+
+.pk-insert-btn:hover {
+  background: #E49B0F;
+  color: white;
+  transform: rotate(90deg) scale(1.1);
+}
 
 /* Scrollbar */
-.custom-scrollbar::-webkit-scrollbar { width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #E5E7EB; border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
 
-.animate-fade-in { animation: fade-in 0.4s ease-out; }
-.animate-slide-up { animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
 
-@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slide-up { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #E5E7EB;
+  border-radius: 10px;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
 </style>

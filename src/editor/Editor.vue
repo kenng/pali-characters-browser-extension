@@ -15,6 +15,17 @@
       </div>
 
       <div class="flex items-center gap-2 md:gap-4">
+        <div class="flex items-center gap-2 mr-1"
+          title="ITRANS in this editor only (does not change the extension-wide setting)">
+          <span class="text-[9px] font-bold uppercase tracking-tighter text-gray-400 hidden sm:inline">ITRANS</span>
+          <button class="w-8 h-4 rounded-full transition-colors relative"
+            :class="isItransEnabled ? 'bg-[#E49B0F]' : 'bg-gray-200'" :aria-pressed="isItransEnabled"
+            aria-label="Toggle ITRANS in this editor" @click="toggleItrans">
+            <div
+              class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full shadow-sm transform transition-transform"
+              :class="{ 'translate-x-4': isItransEnabled }"></div>
+          </button>
+        </div>
         <button @click="toggleFullscreen"
           class="p-2 rounded-full hover:bg-white hover:shadow-sm transition-all text-gray-400 hover:text-[#E49B0F]"
           :class="{ 'text-[#E49B0F]': isFullscreen }" title="Toggle Full Screen">
@@ -156,7 +167,6 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, onUnmounted } from 'vue'
-import browser from 'webextension-polyfill'
 import { onItransKeyDown, resetItransBuffer } from '~/logic/itrans'
 import { onKeyDown } from '~/logic/pali-keyboard'
 import { getKeyboardMappingStr } from '~/logic/pali-keyboard-help'
@@ -169,7 +179,14 @@ const showToast = ref(false)
 const isScrolled = ref(false)
 const isFullscreen = ref(false)
 const isPinned = ref(false)
+/** Editor-only ITRANS preference; independent of popup `isItransEnabled`. Defaults on. */
 const isItransEnabled = ref(true)
+
+function toggleItrans() {
+  isItransEnabled.value = !isItransEnabled.value
+  if (!isItransEnabled.value)
+    resetItransBuffer()
+}
 
 function toggleFullscreen() {
   if (!document.fullscreenElement) {
@@ -267,24 +284,14 @@ function clearText() {
   }
 }
 
-function onStorageChanged(changes: { [key: string]: { newValue?: unknown } }, area: string) {
-  if (area === 'local' && changes.isItransEnabled)
-    isItransEnabled.value = changes.isItransEnabled.newValue !== false
-}
-
-onMounted(async () => {
+onMounted(() => {
   installOsInsertSuppress(document)
   textareaRef.value?.focus()
   window.addEventListener('scroll', handleScroll)
-  const res = await browser.storage.local.get('isItransEnabled')
-  if (res.isItransEnabled !== undefined)
-    isItransEnabled.value = res.isItransEnabled
-  browser.storage.onChanged.addListener(onStorageChanged)
 })
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
-  browser.storage.onChanged.removeListener(onStorageChanged)
 })
 </script>
 
