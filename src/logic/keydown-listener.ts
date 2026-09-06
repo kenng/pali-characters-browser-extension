@@ -14,19 +14,25 @@ function getInputElements(doc: Document) {
   return arr
 }
 
+export function insertCharToActive(char: string) {
+  const elem = document.activeElement
+  if (!elem) return
+
+  const out = getText(elem, char)
+  if (out.pos > -1) {
+    setText(elem, out.output)
+    setCaret(elem, out.pos + 1)
+    elem.dispatchEvent(
+      new Event('input', { bubbles: true }),
+    )
+  }
+}
+
 function keyDownHandler(ev: Event) {
-  const elem = ev.target as Element
   const letter = onKeyDown(ev as KeyboardEvent)
   if (letter) {
-    const out = getText(elem, letter)
-    if (out.pos > -1) {
-      setText(elem, out.output)
-      setCaret(elem, out.pos + 1)
-      elem.dispatchEvent(
-        new Event('input', { bubbles: true }),
-      )
-    }
-
+    insertCharToActive(letter)
+    
     // this will stop propagate to additional event listener
     // e.g. some editor use ctrl-a to select-a. If allows to
     // propagate, when user type ctrl+alt+a and app return

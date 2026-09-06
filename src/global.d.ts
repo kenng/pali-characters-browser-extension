@@ -1,4 +1,4 @@
-import { MsgType } from 'src/logic/constant'
+import { MsgType } from './logic/constant'
 
 declare const __DEV__: boolean
 
@@ -7,7 +7,8 @@ declare module '*.vue' {
   export default component
 }
 
-type TMsg = MsgType.HELP
 export interface IMsg {
-  type: TMsg
+  type: string
+  char?: string
+  action?: string
 }

@@ -339,29 +339,102 @@ html, body {
   font-weight: 600;
 }
 
-.pk-insert-btn {
-  width: 24px;
-  height: 24px;
+.pk-help-row kbd {
+  background: #F3F4F6;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-family: inherit;
+  color: #4B5563;
+  font-weight: 700;
+  font-size: 11px;
+}
+
+.pk-quick-bar-title {
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: #E49B0F;
+  margin-top: 1rem;
+}
+
+.pk-quick-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pk-quick-char {
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
+  background: white;
+  border: 1px solid #F3F4F6;
+  border-radius: 12px;
+  font-family: Garamond, Georgia, serif;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  color: #374151;
+}
+
+.pk-quick-char:hover {
+  background: #E49B0F;
+  color: white;
+  border-color: #E49B0F;
+  transform: translateY(-2px) scale(1.1);
+  box-shadow: 0 4px 15px rgba(228, 155, 15, 0.25);
+}
+
+.pk-insert-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
   background: #E49B0F10;
   color: #E49B0F;
   font-weight: bold;
   font-size: 14px;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   border: 1px solid transparent;
+  cursor: pointer;
 }
 .pk-insert-btn:hover {
   background: #E49B0F;
   color: white;
   transform: scale(1.15) rotate(90deg);
   border-color: #E49B0F;
-  box-shadow: 0 4px 12px rgba(228, 155, 15, 0.2);
 }
-.pk-insert-btn:active {
-  transform: scale(0.95);
+
+.pk-help-title {
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #D1D5DB;
+  margin: 32px 0 12px 4px;
+}
+
+.pk-help-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 8px;
+  border-bottom: 1px solid #F9FAFB;
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+.pk-help-row:hover {
+  background: #E49B0F05;
+}
+.pk-help-row code {
+  font-size: 11px;
+  color: #9CA3AF;
+  font-weight: 500;
 }
 
 /* Icons */

@@ -1,31 +1,42 @@
 /* eslint-disable no-console */
-import { runtime } from 'webextension-polyfill'
-import initPaliInput from '~/logic/keydown-listener'
+import { storage } from 'webextension-polyfill'
+import { onMessage } from 'webext-bridge'
+import initPaliInput, { insertCharToActive } from '~/logic/keydown-listener'
 import { getKeyboardMappingHtml } from '~/logic/pali-keyboard-help'
 import { IMsg } from '~/global'
 import { MsgType } from '~/logic/constant'
 
-// Firefox `browser.tabs.executeScript()` requires scripts return a primitive value
-(() => {
-  runtime.onMessage.addListener((msg: IMsg) => {
-    if (MsgType.HELP)
-      getKeyboardMappingHtml()
+console.log('pali-ext: content script starting...')
 
-    else if (MsgType.RERUN === msg.type)
-      initPaliInput()
-  })
+onMessage('pali-action', ({ data }) => {
+  const msg = data as any as IMsg
+  console.log('pali-ext: [bridge] msg received', msg)
+  if (msg.type === MsgType.HELP) {
+    console.log('pali-ext: [bridge] displaying help guide')
+    getKeyboardMappingHtml()
+  }
+  else if (msg.type === MsgType.RERUN || msg.type === MsgType.ACTIVATE) {
+    console.log('pali-ext: [bridge] activating input')
+    initPaliInput()
+  }
+  else if (msg.type === 'PK_INSERT_INTERNAL' && msg.char) {
+    insertCharToActive(msg.char)
+  }
+})
 
-  initPaliInput()
+// Handle messages from the injected draggable modal
+window.addEventListener('message', (event) => {
+  if (event.data?.type === 'PK_INSERT') {
+    console.log('pali-ext: [window] insert char', event.data.char)
+    insertCharToActive(event.data.char)
+  }
+})
 
-  // // mount component to context window
-  // const container = document.createElement('div')
-  // const root = document.createElement('div')
-  // const styleEl = document.createElement('link')
-  // const shadowDOM = container.attachShadow?.({ mode: __DEV__ ? 'open' : 'closed' }) || container
-  // styleEl.setAttribute('rel', 'stylesheet')
-  // styleEl.setAttribute('href', browser.runtime.getURL('dist/contentScripts/style.css'))
-  // shadowDOM.appendChild(styleEl)
-  // shadowDOM.appendChild(root)
-  // document.body.appendChild(container)
-  // createApp(App).mount(root)
-})()
+// Check if global injection is enabled
+storage.local.get('isGlobalEnabled').then((res) => {
+  const isEnabled = res.isGlobalEnabled !== false // Default to true if not set
+  console.log('pali-ext: storage isGlobalEnabled =', isEnabled)
+  if (isEnabled) {
+    initPaliInput()
+  }
+})
