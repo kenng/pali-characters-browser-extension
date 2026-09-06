@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex flex-col bg-[#FAF9F6] text-[#2D3436] font-sans selection:bg-[#E49B0F]/20 selection:text-[#2D3436] transition-colors duration-500 overflow-x-hidden">
+  <div class="min-h-screen flex flex-col bg-[#FAF9F6] text-[#2D3436] font-sans transition-colors duration-500 overflow-x-hidden">
     <!-- Sophisticated Header -->
     <nav 
       class="fixed top-0 left-0 right-0 z-40 px-6 py-4 flex items-center justify-between transition-all duration-500"
@@ -281,6 +281,22 @@ html, body {
   padding: 0;
   background-color: #FAF9F6;
   overscroll-behavior-y: none;
+}
+
+/*
+  Windi `selection:text-*` without a matching `selection:bg-*` makes Blink/WebKit
+  paint a transparent selection highlight — looks like select is broken.
+  Keep both color and background here (arbitrary opacity utilities are unreliable).
+*/
+textarea::selection,
+::selection {
+  background-color: rgba(228, 155, 15, 0.35);
+  color: #2D3436;
+}
+textarea::-moz-selection,
+::-moz-selection {
+  background-color: rgba(228, 155, 15, 0.35);
+  color: #2D3436;
 }
 
 /* Transitions */
