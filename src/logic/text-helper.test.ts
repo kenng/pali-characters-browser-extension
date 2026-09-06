@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cursor_position, getText, setCaret, setText } from './text-helper'
+import { cursor_position, getText, replaceBeforeCaret, setCaret, setText } from './text-helper'
 
 describe('text-helper', () => {
   describe('cursor_position', () => {
@@ -76,6 +76,30 @@ describe('text-helper', () => {
       input.value = 'ābc'
       setCaret(input, 1)
       expect(input.selectionEnd).toBe(1)
+    })
+  })
+
+  describe('replaceBeforeCaret', () => {
+    it('replaces pending ASCII with a pāli letter', () => {
+      const input = document.createElement('input')
+      input.value = 'sa'
+      input.selectionEnd = 2
+
+      expect(replaceBeforeCaret(input, 1, 'ā')).toEqual({
+        pos: 1,
+        output: 'sā',
+      })
+    })
+
+    it('replaces a dotted prefix (.m → ṃ)', () => {
+      const input = document.createElement('input')
+      input.value = 'buddha.'
+      input.selectionEnd = 7
+
+      expect(replaceBeforeCaret(input, 1, 'ṃ')).toEqual({
+        pos: 6,
+        output: 'buddhaṃ',
+      })
     })
   })
 })

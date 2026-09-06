@@ -41,6 +41,20 @@ export function getText(
   return { pos, output }
 }
 
+/** Remove `backspace` chars before the caret, then insert `letter`. */
+export function replaceBeforeCaret(
+  elem: Element,
+  backspace: number,
+  letter: string,
+): { pos: number; output: string } {
+  const pos = cursor_position(elem)
+  const str = getElemText(elem)
+  if (pos < 0) return { pos, output: str }
+  const start = Math.max(0, pos - backspace)
+  const output = str.slice(0, start) + letter + str.slice(pos)
+  return { pos: start, output }
+}
+
 export function setText(elem: Element, str: string) {
   if (isFormElem(elem)) {
     (elem as HTMLTextAreaElement).value = str

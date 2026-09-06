@@ -2,29 +2,57 @@
   <main class="w-[360px] bg-[#FAF9F6] p-6 font-sans text-[#2D3436] relative overflow-hidden">
     <div class="flex items-center justify-between mb-8">
       <div class="flex items-center gap-3 cursor-default group">
-        <div class="w-8 h-8 bg-[#E49B0F] rounded-xl flex items-center justify-center text-white font-serif italic text-base shadow-lg transition-transform group-hover:rotate-6">ā</div>
+        <div class="w-8 h-8 bg-[#E49B0F] rounded-xl flex items-center justify-center text-white font-serif italic text-base shadow-lg transition-transform group-hover:rotate-6">
+          ā
+        </div>
         <div>
-          <h3 class="text-sm font-bold tracking-tight text-gray-900 leading-none">Pāli Inputs</h3>
-          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-1">Zen Edition</p>
+          <h3 class="text-sm font-bold tracking-tight text-gray-900 leading-none">
+            Pāli Inputs
+          </h3>
+          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-1">
+            Zen Edition
+          </p>
         </div>
       </div>
-      
+
       <!-- Global Toggle -->
       <div class="flex items-center gap-2">
         <span class="text-[9px] font-bold uppercase tracking-tighter text-gray-400">Auto-run</span>
-        <button 
-          @click="toggleGlobal"
+        <button
           class="w-8 h-4 rounded-full transition-colors relative"
           :class="isGlobalEnabled ? 'bg-[#E49B0F]' : 'bg-gray-200'"
+          @click="toggleGlobal"
         >
-          <div 
+          <div
             class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform shadow-sm"
             :class="{ 'translate-x-4': isGlobalEnabled }"
           ></div>
         </button>
       </div>
     </div>
-    
+
+    <div class="flex items-center justify-between mb-6 -mt-4">
+      <div>
+        <div class="text-[10px] font-bold text-gray-700">
+          ITRANS
+        </div>
+        <div class="text-[9px] text-gray-400">
+          Type aa → ā, ;n → ṅ, ;m → ṁ
+        </div>
+      </div>
+      <button
+        class="w-8 h-4 rounded-full transition-colors relative"
+        :class="isItransEnabled ? 'bg-[#E49B0F]' : 'bg-gray-200'"
+        title="Enable ITRANS sequences"
+        @click="toggleItrans"
+      >
+        <div
+          class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform shadow-sm"
+          :class="{ 'translate-x-4': isItransEnabled }"
+        ></div>
+      </button>
+    </div>
+
     <div v-if="!showHelp" class="flex flex-col gap-3 animate-fade-in">
       <button
         class="group relative w-full py-4 px-4 bg-white border border-gray-100 rounded-2xl transition-all duration-300 hover:shadow-[0_10px_30px_rgba(228,155,15,0.1)] hover:-translate-y-1 flex items-center gap-4 overflow-hidden shadow-sm"
@@ -34,8 +62,12 @@
           <span class="i-carbon-edit text-xl" />
         </div>
         <div class="text-left">
-          <div class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-0.5">Focus Mode</div>
-          <div class="text-sm font-bold text-gray-800">Open Zen Editor</div>
+          <div class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-0.5">
+            Focus Mode
+          </div>
+          <div class="text-sm font-bold text-gray-800">
+            Open Zen Editor
+          </div>
         </div>
       </button>
 
@@ -48,8 +80,12 @@
           <span class="i-carbon-flash text-xl" />
         </div>
         <div class="text-left">
-          <div class="text-xs font-bold uppercase tracking-widest text-white/40 mb-0.5">Quick Action</div>
-          <div class="text-sm font-bold">Enable on this Page</div>
+          <div class="text-xs font-bold uppercase tracking-widest text-white/40 mb-0.5">
+            Quick Action
+          </div>
+          <div class="text-sm font-bold">
+            Enable on this Page
+          </div>
         </div>
       </button>
 
@@ -68,26 +104,32 @@
     <div v-else class="animate-slide-up">
       <div class="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
         <div class="flex items-center gap-2">
-          <h4 class="text-xs font-black uppercase tracking-[0.2em] text-gray-400">Shortcuts</h4>
-          <button 
-            @click="pinToPage"
+          <h4 class="text-xs font-black uppercase tracking-[0.2em] text-gray-400">
+            Shortcuts
+          </h4>
+          <button
             class="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-amber-100 text-amber-600 transition-colors"
             title="Pin to Page as draggable modal"
+            @click="pinToPage"
           >
             <span class="i-carbon-pin text-sm" />
           </button>
         </div>
-        <button @click="showHelp = false" class="text-xs font-bold text-[#E49B0F] hover:underline">Back</button>
+        <button class="text-xs font-bold text-[#E49B0F] hover:underline" @click="showHelp = false">
+          Back
+        </button>
       </div>
-      <div 
-        class="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar text-[11px]" 
-        v-html="keyboardHelpContent"
+      <div
+        class="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar text-[11px]"
         @mousedown="handleHelpClick"
+        v-html="keyboardHelpContent"
       ></div>
     </div>
 
     <footer class="mt-8 pt-4 border-t border-gray-100 flex justify-center">
-      <p class="text-[9px] text-gray-300 font-bold uppercase tracking-tighter italic">Peace begins with the first word</p>
+      <p class="text-[9px] text-gray-300 font-bold uppercase tracking-tighter italic">
+        Peace begins with the first word
+      </p>
     </footer>
   </main>
 </template>
@@ -100,13 +142,16 @@ import { getKeyboardMappingStr } from '~/logic/pali-keyboard-help'
 import { MsgType } from '~/logic/constant'
 
 const isGlobalEnabled = ref(true)
+const isItransEnabled = ref(true)
 const showHelp = ref(false)
 const keyboardHelpContent = computed(() => getKeyboardMappingStr())
 
-onMounted(async () => {
-  const res = await browser.storage.local.get('isGlobalEnabled')
+onMounted(async() => {
+  const res = await browser.storage.local.get(['isGlobalEnabled', 'isItransEnabled'])
   if (res.isGlobalEnabled !== undefined)
     isGlobalEnabled.value = res.isGlobalEnabled
+  if (res.isItransEnabled !== undefined)
+    isItransEnabled.value = res.isItransEnabled
 })
 
 async function toggleGlobal() {
@@ -114,11 +159,15 @@ async function toggleGlobal() {
   await browser.storage.local.set({ isGlobalEnabled: isGlobalEnabled.value })
 }
 
+async function toggleItrans() {
+  isItransEnabled.value = !isItransEnabled.value
+  await browser.storage.local.set({ isItransEnabled: isItransEnabled.value })
+}
+
 async function activateInTab() {
   const tabs = await browser.tabs.query({ active: true, currentWindow: true })
-  if (tabs[0]?.id) {
+  if (tabs[0]?.id)
     sendMessage('pali-action', { type: MsgType.ACTIVATE }, { context: 'content-script', tabId: tabs[0].id })
-  }
 }
 
 async function pinToPage() {
@@ -138,9 +187,8 @@ function handleHelpClick(e: MouseEvent) {
     const char = btn.getAttribute('data-char')
     if (char) {
       browser.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
-        if (tabs[0]?.id) {
+        if (tabs[0]?.id)
           sendMessage('pali-action', { type: 'PK_INSERT_INTERNAL', char }, { context: 'content-script', tabId: tabs[0].id })
-        }
       })
     }
   }

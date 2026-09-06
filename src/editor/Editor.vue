@@ -168,6 +168,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, onUnmounted } from 'vue'
+import browser from 'webextension-polyfill'
+import { onItransKeyDown, resetItransBuffer } from '~/logic/itrans'
 import { onKeyDown } from '~/logic/pali-keyboard'
 import { getKeyboardMappingStr } from '~/logic/pali-keyboard-help'
 import { armOsInsertSuppress, installOsInsertSuppress } from '~/logic/os-insert-suppress'
@@ -179,6 +181,7 @@ const showToast = ref(false)
 const isScrolled = ref(false)
 const isFullscreen = ref(false)
 const isPinned = ref(false)
+const isItransEnabled = ref(true)
 
 function toggleFullscreen() {
   if (!document.fullscreenElement) {
@@ -215,21 +218,22 @@ function handleScroll() {
   isScrolled.value = window.scrollY > 20
 }
 
-function insertChar(char: string) {
+function insertChar(char: string, backspace = 0) {
   const el = textareaRef.value
   if (!el) return
-  
+
   const start = el.selectionStart
   const end = el.selectionEnd
   const content = text.value
-  
+  const replaceFrom = Math.max(0, start - backspace)
+
   // Robust insertion using selection indices
-  text.value = content.substring(0, start) + char + content.substring(end)
-  
+  text.value = content.substring(0, replaceFrom) + char + content.substring(end)
+
   // Maintain focus and update caret position
   setTimeout(() => {
     el.focus()
-    const nextPos = start + char.length
+    const nextPos = replaceFrom + char.length
     el.setSelectionRange(nextPos, nextPos)
   }, 0)
 }
@@ -237,9 +241,18 @@ function insertChar(char: string) {
 function handleKeydown(event: KeyboardEvent) {
   const char = onKeyDown(event)
   if (char) {
+    resetItransBuffer()
     insertChar(char)
     armOsInsertSuppress()
+    return
   }
+
+  if (!isItransEnabled.value)
+    return
+
+  const commit = onItransKeyDown(event)
+  if (commit)
+    insertChar(commit.char, commit.backspace)
 }
 
 function handleHelperClick(event: MouseEvent) {
@@ -266,14 +279,24 @@ function clearText() {
   }
 }
 
-onMounted(() => {
+function onStorageChanged(changes: { [key: string]: { newValue?: unknown } }, area: string) {
+  if (area === 'local' && changes.isItransEnabled)
+    isItransEnabled.value = changes.isItransEnabled.newValue !== false
+}
+
+onMounted(async () => {
   installOsInsertSuppress(document)
   textareaRef.value?.focus()
   window.addEventListener('scroll', handleScroll)
+  const res = await browser.storage.local.get('isItransEnabled')
+  if (res.isItransEnabled !== undefined)
+    isItransEnabled.value = res.isItransEnabled
+  browser.storage.onChanged.addListener(onStorageChanged)
 })
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
+  browser.storage.onChanged.removeListener(onStorageChanged)
 })
 </script>
 

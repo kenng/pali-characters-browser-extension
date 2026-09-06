@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { storage } from 'webextension-polyfill'
 import { onMessage } from 'webext-bridge'
-import initPaliInput, { insertCharToActive } from '~/logic/keydown-listener'
+import initPaliInput, { insertCharToActive, setItransEnabled } from '~/logic/keydown-listener'
 import { getKeyboardMappingHtml } from '~/logic/pali-keyboard-help'
 import { IMsg } from '~/global'
 import { MsgType } from '~/logic/constant'
@@ -32,11 +32,17 @@ window.addEventListener('message', (event) => {
   }
 })
 
-// Check if global injection is enabled
-storage.local.get('isGlobalEnabled').then((res) => {
+storage.local.get(['isGlobalEnabled', 'isItransEnabled']).then((res) => {
   const isEnabled = res.isGlobalEnabled !== false // Default to true if not set
-  console.log('pali-ext: storage isGlobalEnabled =', isEnabled)
-  if (isEnabled) {
+  setItransEnabled(res.isItransEnabled !== false) // Default on
+  console.log('pali-ext: storage isGlobalEnabled =', isEnabled, 'isItransEnabled =', res.isItransEnabled !== false)
+  if (isEnabled)
     initPaliInput()
-  }
+})
+
+storage.onChanged.addListener((changes, area) => {
+  if (area !== 'local')
+    return
+  if (changes.isItransEnabled)
+    setItransEnabled(changes.isItransEnabled.newValue !== false)
 })

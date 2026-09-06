@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { getKeyboardMappingStr, getQuickCharBar, isMac } from './pali-keyboard-help'
+import { getItransHelpSection, getKeyboardMappingStr, getQuickCharBar, isMac } from './pali-keyboard-help'
 import { overdot, tilde, underdot } from './pali-keyboard'
 
 const originalNavigator = globalThis.navigator
@@ -85,6 +85,23 @@ describe('pali-keyboard-help', () => {
       expect(html).toMatch(/ñ[\s\S]*?<kbd>Ctrl<\/kbd> \+ <kbd>Alt<\/kbd> \+ <kbd>Shift<\/kbd> \+ <kbd>N<\/kbd>/)
       expect(html).toMatch(/ṇ[\s\S]*?<kbd>Ctrl<\/kbd> \+ <kbd>Alt<\/kbd> \+ <kbd>N<\/kbd>/)
       expect(html).not.toContain('⌥ Opt')
+    })
+
+    it('includes an ITRANS section', () => {
+      const html = getKeyboardMappingStr()
+      expect(html).toContain('ITRANS (when enabled)')
+      expect(html).toContain('<kbd>aa</kbd>')
+      expect(html).toContain('<kbd>;m</kbd>')
+      expect(html).toContain('<kbd>;n</kbd>')
+      expect(html).toContain('<kbd>.g</kbd>')
+    })
+  })
+
+  describe('getItransHelpSection', () => {
+    it('lists ;m for ṁ and not .M as ṁ', () => {
+      const html = getItransHelpSection()
+      expect(html).toMatch(/ṁ[\s\S]*?<kbd>;m<\/kbd>/)
+      expect(html).not.toMatch(/ṁ[\s\S]*?<kbd>\.M<\/kbd>/)
     })
   })
 })

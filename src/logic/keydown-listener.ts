@@ -1,8 +1,21 @@
 import { armOsInsertSuppress, installOsInsertSuppress } from './os-insert-suppress'
+import { onItransKeyDown, resetItransBuffer } from './itrans'
 import { onKeyDown } from './pali-keyboard'
-import { getText, setCaret, setText } from './text-helper'
+import { getText, replaceBeforeCaret, setCaret, setText } from './text-helper'
+
 let allInputElems: any[] = []
 let osSuppressInstalled = false
+let itransEnabled = true
+
+export function setItransEnabled(enabled: boolean) {
+  itransEnabled = enabled
+  if (!enabled)
+    resetItransBuffer()
+}
+
+export function isItransEnabled(): boolean {
+  return itransEnabled
+}
 
 function getInputElements(doc: Document) {
   const arr = [
@@ -16,14 +29,16 @@ function getInputElements(doc: Document) {
   return arr
 }
 
-export function insertCharToActive(char: string) {
+export function insertCharToActive(char: string, backspace = 0) {
   const elem = document.activeElement
   if (!elem) return
 
-  const out = getText(elem, char)
+  const out = backspace > 0
+    ? replaceBeforeCaret(elem, backspace, char)
+    : getText(elem, char)
   if (out.pos > -1) {
     setText(elem, out.output)
-    setCaret(elem, out.pos + 1)
+    setCaret(elem, out.pos + char.length)
     elem.dispatchEvent(
       new Event('input', { bubbles: true }),
     )
@@ -31,8 +46,10 @@ export function insertCharToActive(char: string) {
 }
 
 function keyDownHandler(ev: Event) {
-  const letter = onKeyDown(ev as KeyboardEvent)
+  const event = ev as KeyboardEvent
+  const letter = onKeyDown(event)
   if (letter) {
+    resetItransBuffer()
     insertCharToActive(letter)
     // Block macOS Option glyph (e.g. ¬ after Opt+L → ḷ)
     armOsInsertSuppress()
@@ -42,6 +59,16 @@ function keyDownHandler(ev: Event) {
     // propagate, when user type ctrl+alt+a and app return
     // 'ā', subsequently the whole text will be selected by
     // ctrl-a of the editor.
+    ev.stopPropagation()
+    return
+  }
+
+  if (!itransEnabled)
+    return
+
+  const commit = onItransKeyDown(event)
+  if (commit) {
+    insertCharToActive(commit.char, commit.backspace)
     ev.stopPropagation()
   }
 }

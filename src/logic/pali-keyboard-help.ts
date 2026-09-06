@@ -1,3 +1,4 @@
+import { itransHelpRows } from './itrans'
 import { tilde, underdot, overdot, universalCodes } from './pali-keyboard'
 
 export function isMac(): boolean {
@@ -132,8 +133,28 @@ export function getKeyboardMappingStr(): string {
   htmlStr += renderSection('Tilde characters', tilde, 'tilde')
   htmlStr += renderSection('Underdot characters', underdot, 'underdot')
   htmlStr += renderSection('Overdot characters', overdot, 'overdot')
+  htmlStr += getItransHelpSection()
 
   return htmlStr
+}
+
+export function getItransHelpSection(): string {
+  let sectionHtml = '<div class="pk-help-title">ITRANS (when enabled)</div>'
+  for (const { seq, char } of itransHelpRows) {
+    sectionHtml += `
+      <div class="pk-help-row">
+        <div class="pk-help-char">
+          <button class="pk-insert-btn" data-char="${char}" title="Insert ${char}">
+            <span>+</span>
+          </button>
+          <span class="pk-help-glyph">${char}</span>
+        </div>
+        <div class="pk-help-keys">
+          <code><kbd>${seq}</kbd></code>
+        </div>
+      </div>`
+  }
+  return sectionHtml
 }
 
 
