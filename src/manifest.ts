@@ -19,7 +19,7 @@ export async function getManifest() {
       default_popup: './dist/popup/index.html',
     },
     options_ui: {
-      page: './dist/options/index.html',
+      page: './dist/editor/index.html',
       open_in_tab: true,
     },
     background: {
