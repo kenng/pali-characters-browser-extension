@@ -72,5 +72,17 @@ describe('pali-keyboard-help', () => {
       expect(html).toContain('⌘ Cmd')
       expect(html).toContain('⌥ Opt')
     })
+
+    it('recommends Ctrl+Opt for Mac-conflicting ñ ṅ ṁ and underdots', () => {
+      mockNavigator('Mac')
+
+      const html = getKeyboardMappingStr()
+      expect(html).toMatch(/ñ[\s\S]*?⌃ Ctrl[\s\S]*?⌥ Opt/)
+      expect(html).toMatch(/ḷ[\s\S]*?⌃ Ctrl[\s\S]*?⌥ Opt/)
+      expect(html).toMatch(/ṇ[\s\S]*?⌃ Ctrl[\s\S]*?⌥ Opt/)
+      expect(html).toMatch(/ŋ[\s\S]*?⌃ Ctrl[\s\S]*?⌥ Opt/)
+      expect(html).toMatch(/ṁ[\s\S]*?⌃ Ctrl/)
+      expect(html).toMatch(/ṅ[\s\S]*?⌃ Ctrl/)
+    })
   })
 })

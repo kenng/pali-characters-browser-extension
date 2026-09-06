@@ -170,6 +170,7 @@
 import { ref, onMounted, computed, onUnmounted } from 'vue'
 import { onKeyDown } from '~/logic/pali-keyboard'
 import { getKeyboardMappingStr } from '~/logic/pali-keyboard-help'
+import { armOsInsertSuppress, installOsInsertSuppress } from '~/logic/os-insert-suppress'
 
 const text = ref('')
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
@@ -237,6 +238,7 @@ function handleKeydown(event: KeyboardEvent) {
   const char = onKeyDown(event)
   if (char) {
     insertChar(char)
+    armOsInsertSuppress()
   }
 }
 
@@ -265,6 +267,7 @@ function clearText() {
 }
 
 onMounted(() => {
+  installOsInsertSuppress(document)
   textareaRef.value?.focus()
   window.addEventListener('scroll', handleScroll)
 })

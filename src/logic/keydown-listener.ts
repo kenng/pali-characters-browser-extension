@@ -1,6 +1,8 @@
+import { armOsInsertSuppress, installOsInsertSuppress } from './os-insert-suppress'
 import { onKeyDown } from './pali-keyboard'
 import { getText, setCaret, setText } from './text-helper'
 let allInputElems: any[] = []
+let osSuppressInstalled = false
 
 function getInputElements(doc: Document) {
   const arr = [
@@ -32,7 +34,9 @@ function keyDownHandler(ev: Event) {
   const letter = onKeyDown(ev as KeyboardEvent)
   if (letter) {
     insertCharToActive(letter)
-    
+    // Block macOS Option glyph (e.g. ¬ after Opt+L → ḷ)
+    armOsInsertSuppress()
+
     // this will stop propagate to additional event listener
     // e.g. some editor use ctrl-a to select-a. If allows to
     // propagate, when user type ctrl+alt+a and app return
@@ -72,6 +76,10 @@ export default function initPaliInput() {
   if (document.readyState === 'complete') {
     // eslint-disable-next-line no-console
     console.log('pali-ext: doc completed')
+    if (!osSuppressInstalled) {
+      installOsInsertSuppress(document)
+      osSuppressInstalled = true
+    }
     docAddKeydownListener()
     const inputArray = getInputElements(document)
     listenOnInputElem(inputArray)

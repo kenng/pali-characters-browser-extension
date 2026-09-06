@@ -5,6 +5,62 @@ export function isMac(): boolean {
     (navigator.userAgent.includes('Mac') || navigator.platform.includes('Mac'))
 }
 
+/** Keys whose Cmd/Cmd+Opt shortcuts conflict with macOS / Chromium (New, Minimize). */
+const MAC_CONFLICTING_LETTER_KEYS = new Set(['N', 'M'])
+
+function codeLabel(code: string): string {
+  return code.replace('Key', '').replace('Comma', ',').replace('Period', '.').replace('Slash', '/')
+}
+
+function reverseUniversalMap(): Record<string, string> {
+  const reverseUniversal: Record<string, string> = {}
+  for (const [key, val] of Object.entries(universalCodes))
+    reverseUniversal[val] = codeLabel(key)
+  return reverseUniversal
+}
+
+/**
+ * Primary shortcut shown in help. Prefer working combos over advertised-but-blocked
+ * Mac Cmd/Cmd+Opt for N/M (ñ, ṅ, ṁ).
+ */
+export function primaryShortcutLabel(
+  group: 'tilde' | 'underdot' | 'overdot',
+  letterKey: string,
+  char: string,
+  reverseUniversal: Record<string, string>,
+): string {
+  const uni = reverseUniversal[char] || letterKey
+  const ctrlAlt = '<kbd>⌃ Ctrl</kbd> + <kbd>⌥ Opt</kbd> '
+
+  if (!isMac()) {
+    if (group === 'tilde')
+      return `${ctrlAlt}+ ${letterKey}`
+    if (group === 'underdot')
+      return `<kbd>Alt</kbd> + ${letterKey}`
+    // overdot: Ctrl+letter; ṅ also via Ctrl+,
+    if (char === 'ṅ')
+      return `<kbd>Ctrl</kbd> + , <span class="opacity-40">or</span> <kbd>Ctrl</kbd> + N`
+    return `<kbd>Ctrl</kbd> + ${letterKey}`
+  }
+
+  // Mac
+  if (group === 'tilde') {
+    if (MAC_CONFLICTING_LETTER_KEYS.has(letterKey))
+      return `${ctrlAlt}+ ${uni}`
+    return `<kbd>⌘ Cmd</kbd> + <kbd>⌥ Opt</kbd> + ${letterKey}`
+  }
+  if (group === 'underdot') {
+    // Almost every Opt+letter underdot collides with a macOS Option glyph
+    // (Opt+N → ˜, Opt+G → ©, Opt+L → ¬, Opt+M → µ, …). Prefer Ctrl+Opt.
+    return `${ctrlAlt}+ ${uni}`
+  }
+  // overdot: Cmd+M / Cmd+N are blocked — use Ctrl / Ctrl+Alt
+  if (char === 'ṅ')
+    return `<kbd>⌃ Ctrl</kbd> + , <span class="opacity-40">or</span> ${ctrlAlt}+ ${uni}`
+  if (char === 'ṁ')
+    return `<kbd>⌃ Ctrl</kbd> + M <span class="opacity-40">or</span> ${ctrlAlt}+ ${uni}`
+  return `<kbd>⌃ Ctrl</kbd> + ${letterKey}`
+}
 
 export function getQuickCharBar(): string {
   const allChars = [...Object.values(tilde), ...Object.values(underdot), ...Object.values(overdot)]
@@ -23,17 +79,17 @@ export function getKeyboardMappingStr(): string {
   let htmlStr = getQuickCharBar()
   
   const universalKbd = '<kbd>⌃ Ctrl</kbd> + <kbd>⌥ Opt</kbd> '
+  const reverseUniversal = reverseUniversalMap()
 
-  // Build a reverse map for universal codes for easier lookup by character
-  const reverseUniversal: Record<string, string> = {}
-  for (const [key, val] of Object.entries(universalCodes)) {
-    reverseUniversal[val] = key.replace('Key', '').replace('Comma', ',').replace('Period', '.').replace('Slash', '/')
-  }
-
-  const renderSection = (title: string, data: Record<string, string>, primaryKbd: string) => {
+  const renderSection = (
+    title: string,
+    data: Record<string, string>,
+    group: 'tilde' | 'underdot' | 'overdot',
+  ) => {
     let sectionHtml = `<div class="pk-help-title">${title}</div>`
     for (const [key, value] of Object.entries(data)) {
       const uniKey = reverseUniversal[value] || '?'
+      const primary = primaryShortcutLabel(group, key, value, reverseUniversal)
       sectionHtml += `
         <div class="pk-help-row flex items-center justify-between border-b border-gray-50 py-3 last:border-0 hover:bg-amber-50/30 transition-colors px-2 rounded-xl">
           <div class="flex items-center gap-3">
@@ -43,7 +99,7 @@ export function getKeyboardMappingStr(): string {
             <span class="font-serif text-lg text-gray-800">${value}</span>
           </div>
           <div class="flex flex-col items-end">
-            <code class="text-[10px] text-gray-500">${primaryKbd} + ${key}</code>
+            <code class="text-[10px] text-gray-500">${primary}</code>
             <code class="text-[8px] opacity-40 mt-0.5">${universalKbd} + ${uniKey}</code>
           </div>
         </div>`
@@ -51,13 +107,9 @@ export function getKeyboardMappingStr(): string {
     return sectionHtml
   }
 
-  const tildeKbd = isMac() ? '<kbd>⌘ Cmd</kbd> + <kbd>⌥ Opt</kbd> ' : '<kbd>Ctrl</kbd> + <kbd>Alt</kbd> '
-  const underdotKbd = isMac() ? '<kbd>⌥ Opt</kbd> ' : '<kbd>Alt</kbd> '
-  const overdotKbd = isMac() ? '<kbd>⌘ Cmd</kbd> ' : '<kbd>Ctrl</kbd> '
-
-  htmlStr += renderSection('Tilde characters', tilde, tildeKbd)
-  htmlStr += renderSection('Underdot characters', underdot, underdotKbd)
-  htmlStr += renderSection('Overdot characters', overdot, overdotKbd)
+  htmlStr += renderSection('Tilde characters', tilde, 'tilde')
+  htmlStr += renderSection('Underdot characters', underdot, 'underdot')
+  htmlStr += renderSection('Overdot characters', overdot, 'overdot')
 
   return htmlStr
 }
