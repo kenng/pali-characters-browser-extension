@@ -110,7 +110,7 @@
             macOS Tip
           </div>
           <p class="text-[11px] text-amber-700 leading-relaxed">
-            Use <code>⌃ Ctrl + ⌥ Opt + N</code> for Pāli characters to avoid window conflicts.
+            <code>⌘ Cmd + N</code> opens a new window — use <code>⌃ Ctrl + ⌘ Cmd + ⌥ Opt + N</code> for <strong>ñ</strong> instead.
           </p>
         </div>
       </aside>
@@ -146,7 +146,7 @@
                 macOS Conflict Tip
               </div>
               <p class="text-xs text-amber-700 leading-relaxed">
-                On macOS, <code>⌘ Cmd + N</code> usually opens a new window. To avoid this, we recommend using <strong>Full Screen mode</strong> or using <code>⌃ Ctrl + ⌥ Opt + N</code> for Pāli characters.
+                On macOS, <code>⌘ Cmd + N</code> opens a new window. For <strong>ñ</strong>, use <code>⌃ Ctrl + ⌘ Cmd + ⌥ Opt + N</code> (or Full Screen to reduce other conflicts).
               </p>
             </div>
           </div>
@@ -328,37 +328,61 @@ textarea::-moz-selection,
 
 /* Help UI Styling */
 .pk-help-title {
-  font-weight: 800;
-  font-size: 11px;
+  font-size: 10px;
+  font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.2em;
-  color: #9CA3AF;
-  margin-top: 2rem;
-  margin-bottom: 0.75rem;
+  letter-spacing: 0.1em;
+  color: #D1D5DB;
+  margin: 32px 0 12px 4px;
 }
 .pk-help-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid #F3F4F6;
-  font-size: 0.95rem;
-  color: #111827;
+  gap: 12px;
+  padding: 12px 8px;
+  border-bottom: 1px solid #F9FAFB;
+  border-radius: 12px;
+  transition: background 0.2s;
 }
-.pk-help-row code {
-  font-size: 0.7rem;
-  color: #6B7280;
+.pk-help-row:hover {
+  background: #E49B0F05;
+}
+.pk-help-char {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.pk-help-glyph {
+  font-family: Garamond, Georgia, serif;
+  font-size: 1.125rem;
+  color: #1F2937;
+}
+.pk-help-keys {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+.pk-help-keys code {
+  display: block;
+  max-width: 100%;
+  font-size: 11px;
+  color: #9CA3AF;
+  font-weight: 500;
+  line-height: 1.7;
+  white-space: normal;
+}
+.pk-help-keys-secondary {
+  margin-top: 2px;
+  font-size: 8px !important;
+  opacity: 0.4;
 }
 .pk-help-row kbd {
-  background: #F3F4F6;
-  padding: 2px 4px;
-  border-radius: 4px;
-  font-family: inherit;
-  color: #374151;
-  font-weight: 600;
-}
-
-.pk-help-row kbd {
+  display: inline-block;
   background: #F3F4F6;
   padding: 2px 6px;
   border-radius: 6px;
@@ -366,7 +390,9 @@ textarea::-moz-selection,
   color: #4B5563;
   font-weight: 700;
   font-size: 11px;
+  white-space: nowrap;
 }
+.pk-help-row .opacity-40 { opacity: 0.4; }
 
 .pk-quick-bar-title {
   font-size: 10px;
@@ -427,33 +453,6 @@ textarea::-moz-selection,
   color: white;
   transform: scale(1.15) rotate(90deg);
   border-color: #E49B0F;
-}
-
-.pk-help-title {
-  font-size: 10px;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: #D1D5DB;
-  margin: 32px 0 12px 4px;
-}
-
-.pk-help-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 8px;
-  border-bottom: 1px solid #F9FAFB;
-  border-radius: 12px;
-  transition: all 0.2s;
-}
-.pk-help-row:hover {
-  background: #E49B0F05;
-}
-.pk-help-row code {
-  font-size: 11px;
-  color: #9CA3AF;
-  font-weight: 500;
 }
 
 /* Icons */

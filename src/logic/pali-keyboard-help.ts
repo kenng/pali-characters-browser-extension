@@ -16,7 +16,19 @@ function reverseUniversalMap(): Record<string, string> {
   return reverseUniversal
 }
 
-const ctrlOpt = '<kbd>⌃ Ctrl</kbd> + <kbd>⌥ Opt</kbd> '
+function kbd(label: string): string {
+  return `<kbd>${label}</kbd>`
+}
+
+function joinKeys(...parts: string[]): string {
+  return parts.join(' + ')
+}
+
+function ctrlAltChord(...keys: string[]): string {
+  return isMac()
+    ? joinKeys(kbd('⌃ Ctrl'), kbd('⌥ Opt'), ...keys.map(kbd))
+    : joinKeys(kbd('Ctrl'), kbd('Alt'), ...keys.map(kbd))
+}
 
 /**
  * Primary shortcut shown in help for the remapped irregular chords.
@@ -29,34 +41,37 @@ export function primaryShortcutLabel(
 ): string {
   const uni = reverseUniversal[char] || letterKey
 
-  // Shared irregulars
+  // Shared irregulars — ñ avoids Cmd/Ctrl+N "new window"
   if (char === 'ñ') {
     return isMac()
-      ? '<kbd>⌃ Ctrl</kbd> + <kbd>⌘ Cmd</kbd> + <kbd>⌥ Opt</kbd> + N'
-      : '<kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>Shift</kbd> + N'
+      ? joinKeys(kbd('⌃ Ctrl'), kbd('⌘ Cmd'), kbd('⌥ Opt'), kbd('N'))
+      : joinKeys(kbd('Ctrl'), kbd('Alt'), kbd('Shift'), kbd('N'))
   }
-  if (char === 'ṅ')
-    return `<kbd>⌃ Ctrl</kbd> + N <span class="opacity-40">or</span> <kbd>⌃ Ctrl</kbd> + ,`
+  if (char === 'ṅ') {
+    return isMac()
+      ? `${joinKeys(kbd('⌃ Ctrl'), kbd('N'))} <span class="opacity-40">or</span> ${joinKeys(kbd('⌃ Ctrl'), kbd(','))}`
+      : `${joinKeys(kbd('Ctrl'), kbd('N'))} <span class="opacity-40">or</span> ${joinKeys(kbd('Ctrl'), kbd(','))}`
+  }
   if (char === 'ṁ')
-    return '<kbd>⌃ Ctrl</kbd> + M'
+    return isMac() ? joinKeys(kbd('⌃ Ctrl'), kbd('M')) : joinKeys(kbd('Ctrl'), kbd('M'))
 
   if (!isMac()) {
     if (group === 'tilde')
-      return `${ctrlOpt}+ ${letterKey}`
+      return ctrlAltChord(letterKey)
     if (group === 'underdot') {
       if (char === 'ṇ' || char === 'ṃ')
-        return `${ctrlOpt}+ ${uni}`
-      return `<kbd>Alt</kbd> + ${letterKey}`
+        return ctrlAltChord(uni)
+      return joinKeys(kbd('Alt'), kbd(letterKey))
     }
-    return `<kbd>Ctrl</kbd> + ${letterKey}`
+    return joinKeys(kbd('Ctrl'), kbd(letterKey))
   }
 
   // Mac
   if (group === 'tilde')
-    return `<kbd>⌘ Cmd</kbd> + <kbd>⌥ Opt</kbd> + ${letterKey}`
+    return joinKeys(kbd('⌘ Cmd'), kbd('⌥ Opt'), kbd(letterKey))
   if (group === 'underdot')
-    return `${ctrlOpt}+ ${uni}`
-  return `<kbd>⌃ Ctrl</kbd> + ${letterKey}`
+    return ctrlAltChord(uni)
+  return joinKeys(kbd('⌃ Ctrl'), kbd(letterKey))
 }
 
 /** Faded second line — omit when primary is the only chord. */
@@ -69,7 +84,7 @@ export function secondaryShortcutLabel(
   const uni = reverseUniversal[char]
   if (!uni)
     return null
-  return `${ctrlOpt}+ ${uni}`
+  return ctrlAltChord(uni)
 }
 
 export function getQuickCharBar(): string {
@@ -98,16 +113,16 @@ export function getKeyboardMappingStr(): string {
       const primary = primaryShortcutLabel(group, key, value, reverseUniversal)
       const secondary = secondaryShortcutLabel(value, reverseUniversal)
       sectionHtml += `
-        <div class="pk-help-row flex items-center justify-between border-b border-gray-50 py-3 last:border-0 hover:bg-amber-50/30 transition-colors px-2 rounded-xl">
-          <div class="flex items-center gap-3">
+        <div class="pk-help-row">
+          <div class="pk-help-char">
             <button class="pk-insert-btn" data-char="${value}" title="Insert ${value}">
               <span>+</span>
             </button>
-            <span class="font-serif text-lg text-gray-800">${value}</span>
+            <span class="pk-help-glyph">${value}</span>
           </div>
-          <div class="flex flex-col items-end">
-            <code class="text-[10px] text-gray-500">${primary}</code>
-            ${secondary ? `<code class="text-[8px] opacity-40 mt-0.5">${secondary}</code>` : ''}
+          <div class="pk-help-keys">
+            <code>${primary}</code>
+            ${secondary ? `<code class="pk-help-keys-secondary">${secondary}</code>` : ''}
           </div>
         </div>`
     }
@@ -223,6 +238,69 @@ function setStyle() {
   margin: 24px 0 8px 4px;
 }
 
+.pk-help-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 8px;
+  border-bottom: 1px solid #F9FAFB;
+  border-radius: 12px;
+  transition: background 0.2s;
+}
+
+.pk-help-row:hover { background: #E49B0F08; }
+
+.pk-help-char {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.pk-help-glyph {
+  font-family: Garamond, Georgia, serif;
+  font-size: 1.125rem;
+  color: #1F2937;
+}
+
+.pk-help-keys {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.pk-help-keys code {
+  display: block;
+  max-width: 100%;
+  font-size: 10px;
+  color: #6B7280;
+  line-height: 1.7;
+  white-space: normal;
+}
+
+.pk-help-keys-secondary {
+  margin-top: 2px;
+  font-size: 8px !important;
+  opacity: 0.4;
+}
+
+.pk-help-row kbd {
+  display: inline-block;
+  background: #F3F4F6;
+  padding: 2px 5px;
+  border-radius: 6px;
+  color: #4B5563;
+  font-size: 10px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.pk-help-row .opacity-40 { opacity: 0.4; }
+
 .pk-insert-btn {
   width: 26px;
   height: 26px;
@@ -243,37 +321,6 @@ function setStyle() {
   color: white;
   transform: scale(1.15) rotate(90deg);
 }
-
-.pk-help-row kbd {
-  background: #F3F4F6;
-  padding: 2px 5px;
-  border-radius: 6px;
-  color: #4B5563;
-  font-size: 10px;
-  font-weight: bold;
-}
-
-.pk-help-row code {
-  font-size: 10px;
-  color: #6B7280;
-}
-
-.pk-help-row kbd {
-  background: #F3F4F6;
-  padding: 2px 4px;
-  border-radius: 4px;
-  color: #374151;
-}
-
-.flex { display: flex; }
-.items-center { align-items: center; }
-.gap-3 { gap: 0.75rem; }
-.flex-col { flex-direction: column; }
-.items-end { align-items: flex-end; }
-.font-serif { font-family: serif; }
-.text-lg { font-size: 1.125rem; }
-.opacity-40 { opacity: 0.4; }
-.mt-0.5 { margin-top: 0.125rem; }
   `
   document.head.appendChild(css)
 }

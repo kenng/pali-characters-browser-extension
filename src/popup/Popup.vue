@@ -219,8 +219,9 @@ body {
 }
 .pk-help-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  gap: 10px;
   padding: 0.5rem 0.25rem;
   border-bottom: 1px solid #F9FAFB;
   color: #111827;
@@ -229,19 +230,50 @@ body {
 }
 .pk-help-row:hover { background: #E49B0F08; }
 
-.pk-help-row code {
+.pk-help-char {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.pk-help-glyph {
+  font-family: Garamond, Georgia, serif;
+  font-size: 1rem;
+  color: #1F2937;
+}
+.pk-help-keys {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+.pk-help-keys code {
+  display: block;
+  max-width: 100%;
   font-size: 8px;
   color: #9CA3AF;
   font-weight: 500;
+  line-height: 1.7;
+  white-space: normal;
+}
+.pk-help-keys-secondary {
+  margin-top: 2px;
+  font-size: 7px !important;
+  opacity: 0.4;
 }
 .pk-help-row kbd {
+  display: inline-block;
   background: #F3F4F6;
   padding: 1px 4px;
   border-radius: 4px;
   color: #4B5563;
   font-size: 9px;
   font-weight: bold;
+  white-space: nowrap;
 }
+.pk-help-row .opacity-40 { opacity: 0.4; }
 .pk-insert-btn {
   width: 24px;
   height: 24px;
