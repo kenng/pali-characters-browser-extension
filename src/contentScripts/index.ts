@@ -32,10 +32,16 @@ window.addEventListener('message', (event) => {
   }
 })
 
+function applyItransFromStorage(isGlobalEnabled: boolean, isItransEnabled: boolean) {
+  // ITRANS only runs while the extension is enabled; preference is restored when re-enabled.
+  setItransEnabled(isGlobalEnabled && isItransEnabled)
+}
+
 storage.local.get(['isGlobalEnabled', 'isItransEnabled']).then((res) => {
   const isEnabled = res.isGlobalEnabled !== false // Default to true if not set
-  setItransEnabled(res.isItransEnabled !== false) // Default on
-  console.log('pali-ext: storage isGlobalEnabled =', isEnabled, 'isItransEnabled =', res.isItransEnabled !== false)
+  const itransPref = res.isItransEnabled !== false // Default on
+  applyItransFromStorage(isEnabled, itransPref)
+  console.log('pali-ext: storage isGlobalEnabled =', isEnabled, 'isItransEnabled pref =', itransPref)
   if (isEnabled)
     initPaliInput()
 })
@@ -43,6 +49,13 @@ storage.local.get(['isGlobalEnabled', 'isItransEnabled']).then((res) => {
 storage.onChanged.addListener((changes, area) => {
   if (area !== 'local')
     return
-  if (changes.isItransEnabled)
-    setItransEnabled(changes.isItransEnabled.newValue !== false)
+  if (!changes.isGlobalEnabled && !changes.isItransEnabled)
+    return
+
+  storage.local.get(['isGlobalEnabled', 'isItransEnabled']).then((res) => {
+    const isEnabled = res.isGlobalEnabled !== false
+    const itransPref = res.isItransEnabled !== false
+    applyItransFromStorage(isEnabled, itransPref)
+    console.log('pali-ext: storage changed isGlobalEnabled =', isEnabled, 'isItransEnabled pref =', itransPref)
+  })
 })

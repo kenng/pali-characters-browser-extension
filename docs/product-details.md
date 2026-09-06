@@ -12,14 +12,14 @@ FEATURES
 • Quick-insert character bar and clickable shortcut guide
 • Pin a draggable helper modal to the page while you write
 • Zen Editor — a focused writing page opened from the popup
-• Auto-run on all pages, or enable only on the current tab
+• Enable on all pages, or turn on only for the current tab
 • Layout-friendly shortcuts for both Windows and macOS
 
 HOW TO USE
 
 1. Install the extension
 2. Click the toolbar icon to open the popup
-3. Keep Auto-run on (recommended), or turn it on for the current page
+3. Keep Enable on (recommended), or turn it on for the current page
 4. Focus any text field and use shortcuts — or open the shortcut guide and click a character to insert it
 5. Optionally enable ITRANS for romanized typing sequences
 6. Open Zen Editor when you want a distraction-free place to write

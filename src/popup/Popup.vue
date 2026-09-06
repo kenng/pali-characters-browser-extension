@@ -17,10 +17,11 @@
 
       <!-- Global Toggle -->
       <div class="flex items-center gap-2">
-        <span class="text-[9px] font-bold uppercase tracking-tighter text-gray-400">Auto-run</span>
+        <span class="text-[9px] font-bold uppercase tracking-tighter text-gray-400">Enable</span>
         <button
           class="w-8 h-4 rounded-full transition-colors relative"
           :class="isGlobalEnabled ? 'bg-[#E49B0F]' : 'bg-gray-200'"
+          title="Enable Pāli input on all pages"
           @click="toggleGlobal"
         >
           <div
@@ -31,7 +32,10 @@
       </div>
     </div>
 
-    <div class="flex items-center justify-between mb-6 -mt-4">
+    <div
+      class="flex items-center justify-between mb-6 -mt-4"
+      :class="{ 'opacity-40': !isGlobalEnabled }"
+    >
       <div>
         <div class="text-[10px] font-bold text-gray-700">
           ITRANS
@@ -42,13 +46,14 @@
       </div>
       <button
         class="w-8 h-4 rounded-full transition-colors relative"
-        :class="isItransEnabled ? 'bg-[#E49B0F]' : 'bg-gray-200'"
-        title="Enable ITRANS sequences"
+        :class="effectiveItransEnabled ? 'bg-[#E49B0F]' : 'bg-gray-200'"
+        :disabled="!isGlobalEnabled"
+        :title="isGlobalEnabled ? 'Enable ITRANS sequences' : 'Enable the extension first to use ITRANS'"
         @click="toggleItrans"
       >
         <div
           class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform shadow-sm"
-          :class="{ 'translate-x-4': isItransEnabled }"
+          :class="{ 'translate-x-4': effectiveItransEnabled }"
         ></div>
       </button>
     </div>
@@ -142,9 +147,12 @@ import { getKeyboardMappingStr } from '~/logic/pali-keyboard-help'
 import { MsgType } from '~/logic/constant'
 
 const isGlobalEnabled = ref(true)
+/** User preference for ITRANS; kept in storage even while Enable is off. */
 const isItransEnabled = ref(true)
 const showHelp = ref(false)
 const keyboardHelpContent = computed(() => getKeyboardMappingStr())
+/** ITRANS is only active when the extension is enabled. */
+const effectiveItransEnabled = computed(() => isGlobalEnabled.value && isItransEnabled.value)
 
 onMounted(async() => {
   const res = await browser.storage.local.get(['isGlobalEnabled', 'isItransEnabled'])
@@ -156,10 +164,16 @@ onMounted(async() => {
 
 async function toggleGlobal() {
   isGlobalEnabled.value = !isGlobalEnabled.value
-  await browser.storage.local.set({ isGlobalEnabled: isGlobalEnabled.value })
+  // Persist Enable + remembered ITRANS preference together (ITRANS preference is not cleared).
+  await browser.storage.local.set({
+    isGlobalEnabled: isGlobalEnabled.value,
+    isItransEnabled: isItransEnabled.value,
+  })
 }
 
 async function toggleItrans() {
+  if (!isGlobalEnabled.value)
+    return
   isItransEnabled.value = !isItransEnabled.value
   await browser.storage.local.set({ isItransEnabled: isItransEnabled.value })
 }

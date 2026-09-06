@@ -63,6 +63,15 @@ describe('itrans', () => {
       expect(getItransBuffer()).toBe('')
     })
 
+    it('does not treat la as ā (only aa)', () => {
+      expect(itransMap.la).toBeUndefined()
+      expect(onItransKeyDown(keyEvent('l'))).toBeUndefined()
+      expect(getItransBuffer()).toBe('')
+      expect(onItransKeyDown(keyEvent('a'))).toBeUndefined()
+      // 'a' alone is a pending prefix of aa, not a commit
+      expect(getItransBuffer()).toBe('a')
+    })
+
     it('commits ;n → ṅ and ;m → ṁ', () => {
       onItransKeyDown(keyEvent(';'))
       expect(onItransKeyDown(keyEvent('n'))).toEqual({ char: 'ṅ', backspace: 1 })
