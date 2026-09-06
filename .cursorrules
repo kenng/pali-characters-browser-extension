@@ -45,7 +45,7 @@ Path alias: `~/` → `src/`. Prefer `import … from '~/logic/…'`.
 
 - Vue SFCs: `<script setup lang="ts">`, Composition API
 - ESLint: `@antfu/eslint-config` — single quotes, no semicolons
-- Prefer `webextension-polyfill` (`browser`) over raw `chrome.*`
+- Prefer `webextension-polyfill` (`browser`) over raw `chrome.*`. Always `import browser from 'webextension-polyfill'` (default export). Named `import { browser }` is `undefined` and breaks `browser.storage` / tabs APIs.
 - Cross-context messaging: `webext-bridge` (`sendMessage` / `onMessage`), not ad-hoc `runtime.sendMessage` unless necessary
 - Keep page-injection logic in content script + `src/logic/`; keep chrome UI in popup/options/editor
 - Log with `pali-ext:` prefix when debugging extension runtime
@@ -54,11 +54,18 @@ Path alias: `~/` → `src/`. Prefer `import … from '~/logic/…'`.
 ## Testing
 
 - **Do not use Cursor browser agent / IDE browser MCP to test this extension.** Those isolated browsers cannot load unpacked extensions or exercise content-script / background messaging.
-- Test in **normal Chrome** (or Firefox) only:
+- Manual (always valid):
   1. `pnpm build` (or `pnpm dev`)
   2. Open `chrome://extensions` → enable Developer mode → **Load unpacked** → select the `extension/` folder
   3. Open a normal https page, use the toolbar popup, and check page DevTools + the service worker inspector on `chrome://extensions`
-- Note: branded Chrome 137+ often ignores `web-ext` / `--load-extension`. Prefer Load unpacked (or Chrome for Testing) over relying on `pnpm start:chromium`.
+- Automated (what works for agent/CI-style checks):
+  1. `pnpm build` first so `extension/` is current.
+  2. Launch **Playwright Chromium** (or an older Chromium / Chrome for Testing that still honors `--load-extension`) — **not** branded Google Chrome 137+, which often ignores `--load-extension` / `web-ext`.
+  3. Use `launch_persistent_context` with a temp user-data dir, `ignore_default_args=['--disable-extensions']`, and args `--disable-extensions-except=<abs-path-to-extension>` + `--load-extension=<abs-path-to-extension>` (absolute path to `extension/`).
+  4. Discover the extension ID via CDP `Target.getTargets` (look for `chrome-extension://…/dist/background/…`). Playwright’s `context.service_workers` often stays empty for MV3 even when the worker is running.
+  5. Open `chrome-extension://<id>/dist/popup/index.html` (and options/editor as needed). Assert no `pageerror` / console errors, UI renders, and `chrome.storage.local` get/set works (e.g. Auto-run toggle).
+  6. Prefer system/Python Playwright if the repo has no Node `playwright` dependency; do not add packages just for a one-off check unless asked.
+- Prefer Load unpacked (or the Chromium automation above) over relying on `pnpm start:chromium` / branded Chrome.
 
 ## Commands
 

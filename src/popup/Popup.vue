@@ -94,7 +94,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { browser } from 'webextension-polyfill'
+import browser from 'webextension-polyfill'
 import { sendMessage } from 'webext-bridge'
 import { getKeyboardMappingStr } from '~/logic/pali-keyboard-help'
 import { MsgType } from '~/logic/constant'
