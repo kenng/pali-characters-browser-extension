@@ -1,12 +1,9 @@
 import { tilde, underdot, overdot, universalCodes } from './pali-keyboard'
 
 export function isMac(): boolean {
-  return typeof navigator !== 'undefined' && 
-    (navigator.userAgent.includes('Mac') || navigator.platform.includes('Mac'))
+  return typeof navigator !== 'undefined'
+    && (navigator.userAgent.includes('Mac') || navigator.platform.includes('Mac'))
 }
-
-/** Keys whose Cmd/Cmd+Opt shortcuts conflict with macOS / Chromium (New, Minimize). */
-const MAC_CONFLICTING_LETTER_KEYS = new Set(['N', 'M'])
 
 function codeLabel(code: string): string {
   return code.replace('Key', '').replace('Comma', ',').replace('Period', '.').replace('Slash', '/')
@@ -19,9 +16,10 @@ function reverseUniversalMap(): Record<string, string> {
   return reverseUniversal
 }
 
+const ctrlOpt = '<kbd>⌃ Ctrl</kbd> + <kbd>⌥ Opt</kbd> '
+
 /**
- * Primary shortcut shown in help. Prefer working combos over advertised-but-blocked
- * Mac Cmd/Cmd+Opt for N/M (ñ, ṅ, ṁ).
+ * Primary shortcut shown in help for the remapped irregular chords.
  */
 export function primaryShortcutLabel(
   group: 'tilde' | 'underdot' | 'overdot',
@@ -30,55 +28,64 @@ export function primaryShortcutLabel(
   reverseUniversal: Record<string, string>,
 ): string {
   const uni = reverseUniversal[char] || letterKey
-  const ctrlAlt = '<kbd>⌃ Ctrl</kbd> + <kbd>⌥ Opt</kbd> '
+
+  // Shared irregulars
+  if (char === 'ñ') {
+    return isMac()
+      ? '<kbd>⌃ Ctrl</kbd> + <kbd>⌘ Cmd</kbd> + <kbd>⌥ Opt</kbd> + N'
+      : '<kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>Shift</kbd> + N'
+  }
+  if (char === 'ṅ')
+    return `<kbd>⌃ Ctrl</kbd> + N <span class="opacity-40">or</span> <kbd>⌃ Ctrl</kbd> + ,`
+  if (char === 'ṁ')
+    return '<kbd>⌃ Ctrl</kbd> + M'
 
   if (!isMac()) {
     if (group === 'tilde')
-      return `${ctrlAlt}+ ${letterKey}`
-    if (group === 'underdot')
+      return `${ctrlOpt}+ ${letterKey}`
+    if (group === 'underdot') {
+      if (char === 'ṇ' || char === 'ṃ')
+        return `${ctrlOpt}+ ${uni}`
       return `<kbd>Alt</kbd> + ${letterKey}`
-    // overdot: Ctrl+letter; ṅ also via Ctrl+,
-    if (char === 'ṅ')
-      return `<kbd>Ctrl</kbd> + , <span class="opacity-40">or</span> <kbd>Ctrl</kbd> + N`
+    }
     return `<kbd>Ctrl</kbd> + ${letterKey}`
   }
 
   // Mac
-  if (group === 'tilde') {
-    if (MAC_CONFLICTING_LETTER_KEYS.has(letterKey))
-      return `${ctrlAlt}+ ${uni}`
+  if (group === 'tilde')
     return `<kbd>⌘ Cmd</kbd> + <kbd>⌥ Opt</kbd> + ${letterKey}`
-  }
-  if (group === 'underdot') {
-    // Almost every Opt+letter underdot collides with a macOS Option glyph
-    // (Opt+N → ˜, Opt+G → ©, Opt+L → ¬, Opt+M → µ, …). Prefer Ctrl+Opt.
-    return `${ctrlAlt}+ ${uni}`
-  }
-  // overdot: Cmd+M / Cmd+N are blocked — use Ctrl / Ctrl+Alt
-  if (char === 'ṅ')
-    return `<kbd>⌃ Ctrl</kbd> + , <span class="opacity-40">or</span> ${ctrlAlt}+ ${uni}`
-  if (char === 'ṁ')
-    return `<kbd>⌃ Ctrl</kbd> + M <span class="opacity-40">or</span> ${ctrlAlt}+ ${uni}`
+  if (group === 'underdot')
+    return `${ctrlOpt}+ ${uni}`
   return `<kbd>⌃ Ctrl</kbd> + ${letterKey}`
+}
+
+/** Faded second line — omit when primary is the only chord. */
+export function secondaryShortcutLabel(
+  char: string,
+  reverseUniversal: Record<string, string>,
+): string | null {
+  if (char === 'ñ' || char === 'ṁ' || char === 'ṅ')
+    return null
+  const uni = reverseUniversal[char]
+  if (!uni)
+    return null
+  return `${ctrlOpt}+ ${uni}`
 }
 
 export function getQuickCharBar(): string {
   const allChars = [...Object.values(tilde), ...Object.values(underdot), ...Object.values(overdot)]
   const uniqueChars = [...new Set(allChars)]
-  
+
   let html = '<div class="pk-quick-bar-title text-[9px] font-black tracking-widest uppercase text-amber-500/60 mb-2">Quick Insert</div>'
   html += '<div class="pk-quick-bar flex flex-wrap gap-2 mb-6">'
-  for (const char of uniqueChars) {
+  for (const char of uniqueChars)
     html += `<button class="pk-quick-char" data-char="${char}">${char}</button>`
-  }
   html += '</div>'
   return html
 }
 
 export function getKeyboardMappingStr(): string {
   let htmlStr = getQuickCharBar()
-  
-  const universalKbd = '<kbd>⌃ Ctrl</kbd> + <kbd>⌥ Opt</kbd> '
   const reverseUniversal = reverseUniversalMap()
 
   const renderSection = (
@@ -88,8 +95,8 @@ export function getKeyboardMappingStr(): string {
   ) => {
     let sectionHtml = `<div class="pk-help-title">${title}</div>`
     for (const [key, value] of Object.entries(data)) {
-      const uniKey = reverseUniversal[value] || '?'
       const primary = primaryShortcutLabel(group, key, value, reverseUniversal)
+      const secondary = secondaryShortcutLabel(value, reverseUniversal)
       sectionHtml += `
         <div class="pk-help-row flex items-center justify-between border-b border-gray-50 py-3 last:border-0 hover:bg-amber-50/30 transition-colors px-2 rounded-xl">
           <div class="flex items-center gap-3">
@@ -100,7 +107,7 @@ export function getKeyboardMappingStr(): string {
           </div>
           <div class="flex flex-col items-end">
             <code class="text-[10px] text-gray-500">${primary}</code>
-            <code class="text-[8px] opacity-40 mt-0.5">${universalKbd} + ${uniKey}</code>
+            ${secondary ? `<code class="text-[8px] opacity-40 mt-0.5">${secondary}</code>` : ''}
           </div>
         </div>`
     }
@@ -113,6 +120,7 @@ export function getKeyboardMappingStr(): string {
 
   return htmlStr
 }
+
 
 function setStyle() {
   const css = document.createElement('style')

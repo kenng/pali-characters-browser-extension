@@ -54,16 +54,72 @@ describe('onKeyDown', () => {
       },
     )
 
-    it('returns uppercase when Shift is held', () => {
+    it('maps Ctrl+Alt+N to ṇ (not ñ)', () => {
       mockNavigator('Win')
-      const event = keyEvent({
-        code: 'KeyA',
-        ctrlKey: true,
-        altKey: true,
-        shiftKey: true,
-      })
+      expect(onKeyDown(keyEvent({ code: 'KeyN', ctrlKey: true, altKey: true }))).toBe('ṇ')
+    })
 
-      expect(onKeyDown(event)).toBe('Ā')
+    it('maps Ctrl+Alt+M to ṃ (not ṁ)', () => {
+      mockNavigator('Win')
+      expect(onKeyDown(keyEvent({ code: 'KeyM', ctrlKey: true, altKey: true }))).toBe('ṃ')
+    })
+
+    it('does not map removed Ctrl+Alt+, / . / /', () => {
+      mockNavigator('Win')
+      expect(onKeyDown(keyEvent({ code: 'Comma', ctrlKey: true, altKey: true }))).toBeUndefined()
+      expect(onKeyDown(keyEvent({ code: 'Period', ctrlKey: true, altKey: true }))).toBeUndefined()
+      expect(onKeyDown(keyEvent({ code: 'Slash', ctrlKey: true, altKey: true }))).toBeUndefined()
+    })
+
+    it('returns uppercase when Shift is held (non-ñ chords)', () => {
+      mockNavigator('Win')
+      expect(
+        onKeyDown(keyEvent({
+          code: 'KeyA',
+          ctrlKey: true,
+          altKey: true,
+          shiftKey: true,
+        })),
+      ).toBe('Ā')
+    })
+  })
+
+  describe('ñ irregular shortcuts', () => {
+    it('maps Ctrl+Cmd+Opt+N to ñ on Mac', () => {
+      mockNavigator('Mac')
+      expect(
+        onKeyDown(keyEvent({
+          code: 'KeyN',
+          ctrlKey: true,
+          altKey: true,
+          metaKey: true,
+        })),
+      ).toBe('ñ')
+    })
+
+    it('maps Ctrl+Cmd+Opt+Shift+N to Ñ on Mac', () => {
+      mockNavigator('Mac')
+      expect(
+        onKeyDown(keyEvent({
+          code: 'KeyN',
+          ctrlKey: true,
+          altKey: true,
+          metaKey: true,
+          shiftKey: true,
+        })),
+      ).toBe('Ñ')
+    })
+
+    it('maps Ctrl+Alt+Shift+N to ñ on Windows', () => {
+      mockNavigator('Win')
+      expect(
+        onKeyDown(keyEvent({
+          code: 'KeyN',
+          ctrlKey: true,
+          altKey: true,
+          shiftKey: true,
+        })),
+      ).toBe('ñ')
     })
   })
 
@@ -95,6 +151,11 @@ describe('onKeyDown', () => {
       mockNavigator('Win')
       expect(onKeyDown(keyEvent({ code, ctrlKey: true }))).toBe(char)
     })
+
+    it('does not map Ctrl+Alt+M to ṁ', () => {
+      mockNavigator('Win')
+      expect(onKeyDown(keyEvent({ code: 'KeyM', ctrlKey: true, altKey: true }))).toBe('ṃ')
+    })
   })
 
   describe('Mac shortcuts', () => {
@@ -120,6 +181,11 @@ describe('onKeyDown', () => {
       expect(
         onKeyDown(keyEvent({ code: 'KeyN', metaKey: true, altKey: true })),
       ).toBeUndefined()
+    })
+
+    it('maps Ctrl+Alt+N to ṇ on Mac', () => {
+      mockNavigator('Mac')
+      expect(onKeyDown(keyEvent({ code: 'KeyN', ctrlKey: true, altKey: true }))).toBe('ṇ')
     })
 
     it('maps Alt+D underdot on Mac', () => {

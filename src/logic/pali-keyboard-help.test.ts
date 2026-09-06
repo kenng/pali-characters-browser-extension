@@ -65,24 +65,25 @@ describe('pali-keyboard-help', () => {
       expect(html).toContain('ṁ')
     })
 
-    it('shows Mac-oriented modifiers on Mac', () => {
+    it('shows remapped irregular shortcuts on Mac', () => {
       mockNavigator('Mac')
 
       const html = getKeyboardMappingStr()
+      expect(html).toMatch(/ñ[\s\S]*?⌘ Cmd[\s\S]*?⌥ Opt[\s\S]*?N|ñ[\s\S]*?⌃ Ctrl[\s\S]*?⌘ Cmd[\s\S]*?⌥ Opt/)
       expect(html).toContain('⌘ Cmd')
       expect(html).toContain('⌥ Opt')
+      expect(html).toMatch(/ṇ[\s\S]*?⌃ Ctrl[\s\S]*?⌥ Opt/)
+      expect(html).toMatch(/ṃ[\s\S]*?⌃ Ctrl[\s\S]*?⌥ Opt/)
+      expect(html).toMatch(/ṁ[\s\S]*?⌃ Ctrl[\s\S]*?\+\s*M/)
+      expect(html).toMatch(/ṅ[\s\S]*?⌃ Ctrl[\s\S]*?N/)
+      expect(html).toMatch(/ṅ[\s\S]*?⌃ Ctrl[\s\S]*?,/)
     })
 
-    it('recommends Ctrl+Opt for Mac-conflicting ñ ṅ ṁ and underdots', () => {
-      mockNavigator('Mac')
-
+    it('shows Ctrl+Alt+Shift+N for ñ on Windows', () => {
+      mockNavigator('Win')
       const html = getKeyboardMappingStr()
-      expect(html).toMatch(/ñ[\s\S]*?⌃ Ctrl[\s\S]*?⌥ Opt/)
-      expect(html).toMatch(/ḷ[\s\S]*?⌃ Ctrl[\s\S]*?⌥ Opt/)
-      expect(html).toMatch(/ṇ[\s\S]*?⌃ Ctrl[\s\S]*?⌥ Opt/)
-      expect(html).toMatch(/ŋ[\s\S]*?⌃ Ctrl[\s\S]*?⌥ Opt/)
-      expect(html).toMatch(/ṁ[\s\S]*?⌃ Ctrl/)
-      expect(html).toMatch(/ṅ[\s\S]*?⌃ Ctrl/)
+      expect(html).toMatch(/ñ[\s\S]*?Shift[\s\S]*?N/)
+      expect(html).toMatch(/ṇ[\s\S]*?⌃ Ctrl[\s\S]*?⌥ Opt[\s\S]*?N|ṇ[\s\S]*?Ctrl[\s\S]*?Alt[\s\S]*?N|ṇ[\s\S]*?N/)
     })
   })
 })
