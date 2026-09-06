@@ -50,13 +50,16 @@ export const sharedConfig: UserConfig = {
     // https://github.com/antfu/unplugin-icons
     Icons(),
 
-    // rewrite assets to use relative path
+    // rewrite assets to use relative path; drop modulepreload (Chrome
+    // logs "cross-world extension resource mismatch" for chrome-extension://)
     {
       name: 'assets-rewrite',
       enforce: 'post',
       apply: 'build',
       transformIndexHtml(html, { path }) {
-        return html.replace(/"\/assets\//g, `"${relative(dirname(path), '/assets')}/`)
+        return html
+          .replace(/"\/assets\//g, `"${relative(dirname(path), '/assets')}/`)
+          .replace(/<link rel="modulepreload"[^>]*>\n?/g, '')
       },
     },
   ],

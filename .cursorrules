@@ -1,0 +1,69 @@
+# Pāli Characters Browser Extension — Architecture
+
+MV3 WebExtension (Chrome/Firefox) that injects Pāli diacritic input via keyboard shortcuts. Stack: Vue 3 + TypeScript + Vite (vitesse-webext), Windi CSS, webextension-polyfill, webext-bridge. Package manager: pnpm.
+
+## Contexts (do not mix responsibilities)
+
+| Context | Path | Role |
+|---------|------|------|
+| Content script | `src/contentScripts/` | Runs in page; attaches keydown listeners; inserts chars into focused inputs; shows pinned help modal |
+| Popup | `src/popup/` | Extension UI: auto-run toggle, activate page, open editor, keyboard help |
+| Options | `src/options/` | Options page UI |
+| Editor | `src/editor/` | Standalone zen editor page opened from popup |
+| Background | `src/background/` | Service worker; HMR injection in dev (`contentScriptHMR.ts`) |
+| Shared logic | `src/logic/` | Keyboard maps, text insert helpers, message constants — **no Vue UI** |
+| Manifest | `src/manifest.ts` | Generates `extension/manifest.json` (edit here, not the built file) |
+
+Built output lives under `extension/` (load this folder in the browser). Do not hand-edit `extension/dist/` or generated `extension/manifest.json`.
+
+## Data flow
+
+1. **Keyboard input**: content script → `keydown-listener` → `pali-keyboard.onKeyDown` → `text-helper` insert into active element (input/textarea/contenteditable, including same-origin iframes).
+2. **Popup → page**: `webext-bridge` message channel `pali-action` with `MsgType` from `src/logic/constant.ts` (`HELP`, `RERUN`, `ACTIVATE`). Content script handles in `contentScripts/index.ts`.
+3. **Pinned help modal**: injects UI; char clicks use `window.postMessage` (`PK_INSERT`) or bridge (`PK_INSERT_INTERNAL`) → `insertCharToActive`.
+4. **Settings**: `browser.storage.local` key `isGlobalEnabled` (default true). Content script reads it on load; popup toggles it.
+
+## Where to change what
+
+- New/changed key mappings → `src/logic/pali-keyboard.ts` (and keep help UI in sync via `pali-keyboard-help.ts`)
+- Insert / caret behavior → `src/logic/text-helper.ts` + `keydown-listener.ts`
+- Cross-context messages → add to `MsgType` / `IMsg` (`global.d.ts`), handle in content script + sender
+- Permissions / CSP / content_scripts → `src/manifest.ts`
+- Shared Vue components (popup/options) → `src/components/` (auto-imported)
+- Styles shared by extension pages → `src/styles/`
+
+## Build layout
+
+- `vite.config.ts` — popup, options, editor (web pages)
+- `vite.config.content.ts` — content script IIFE
+- `vite.config.background.ts` — background service worker
+- `scripts/prepare.ts` — copies/prepares extension package; `scripts/manifest.ts` writes manifest
+
+Path alias: `~/` → `src/`. Prefer `import … from '~/logic/…'`.
+
+## Conventions
+
+- Vue SFCs: `<script setup lang="ts">`, Composition API
+- ESLint: `@antfu/eslint-config` — single quotes, no semicolons
+- Prefer `webextension-polyfill` (`browser`) over raw `chrome.*`
+- Cross-context messaging: `webext-bridge` (`sendMessage` / `onMessage`), not ad-hoc `runtime.sendMessage` unless necessary
+- Keep page-injection logic in content script + `src/logic/`; keep chrome UI in popup/options/editor
+- Log with `pali-ext:` prefix when debugging extension runtime
+- i18n strings: `extension/_locales/{en,zh_CN}/messages.json`; manifest uses `__MSG_*__`
+
+## Testing
+
+- **Do not use Cursor browser agent / IDE browser MCP to test this extension.** Those isolated browsers cannot load unpacked extensions or exercise content-script / background messaging.
+- Test in **normal Chrome** (or Firefox) only:
+  1. `pnpm build` (or `pnpm dev`)
+  2. Open `chrome://extensions` → enable Developer mode → **Load unpacked** → select the `extension/` folder
+  3. Open a normal https page, use the toolbar popup, and check page DevTools + the service worker inspector on `chrome://extensions`
+- Note: branded Chrome 137+ often ignores `web-ext` / `--load-extension`. Prefer Load unpacked (or Chrome for Testing) over relying on `pnpm start:chromium`.
+
+## Commands
+
+- `pnpm dev` — develop (load `extension/`)
+- `pnpm build` — production build
+- `pnpm lint` — eslint `src/**/*.{json,ts,js,vue}`
+- `pnpm test` — vitest (logic unit tests)
+- `pnpm start:chromium` / `pnpm start:firefox` — run via web-ext
