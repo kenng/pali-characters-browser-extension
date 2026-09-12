@@ -26,6 +26,24 @@
       <div class="flex items-center gap-2 md:gap-4">
         <div
           class="flex items-center gap-2 mr-1"
+          title="Save editor text to local storage and restore it next time"
+        >
+          <span class="text-[9px] font-bold uppercase tracking-tighter text-gray-400">Save draft</span>
+          <button
+            class="w-8 h-4 rounded-full transition-colors relative"
+            :class="saveDraftEnabled ? 'bg-[#E49B0F]' : 'bg-gray-200'"
+            :aria-pressed="saveDraftEnabled"
+            aria-label="Toggle save draft"
+            @click="saveDraftEnabled = !saveDraftEnabled"
+          >
+            <div
+              class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full shadow-sm transform transition-transform"
+              :class="{ 'translate-x-4': saveDraftEnabled }"
+            ></div>
+          </button>
+        </div>
+        <div
+          class="flex items-center gap-2 mr-1"
           title="ITRANS in this editor only (does not change the extension-wide setting)"
         >
           <span class="text-[9px] font-bold uppercase tracking-tighter text-gray-400 hidden sm:inline">ITRANS</span>
@@ -245,9 +263,12 @@ import { getKeyboardMappingStr } from '~/logic/pali-keyboard-help'
 import { armOsInsertSuppress, installOsInsertSuppress } from '~/logic/os-insert-suppress'
 
 const DRAFT_STORAGE_KEY = 'zenEditorDraft'
+const SAVE_DRAFT_PREF_KEY = 'zenEditorSaveDraft'
 
 const text = ref('')
 const draftReady = ref(false)
+/** Persist editor text across sessions. Defaults on. */
+const saveDraftEnabled = ref(true)
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
 const showHelp = ref(false)
 const showToast = ref(false)
@@ -257,14 +278,28 @@ const isPinned = ref(false)
 /** Editor-only ITRANS preference; independent of popup `isItransEnabled`. Defaults on. */
 const isItransEnabled = ref(true)
 
-const saveDraft = useDebounceFn(async(value: string) => {
+const persistDraft = useDebounceFn(async(value: string) => {
+  if (!saveDraftEnabled.value)
+    return
   await browser.storage.local.set({ [DRAFT_STORAGE_KEY]: value })
 }, 300)
 
 watch(text, (value) => {
+  if (!draftReady.value || !saveDraftEnabled.value)
+    return
+  persistDraft(value)
+})
+
+watch(saveDraftEnabled, async(enabled) => {
   if (!draftReady.value)
     return
-  saveDraft(value)
+  await browser.storage.local.set({ [SAVE_DRAFT_PREF_KEY]: enabled })
+  if (enabled) {
+    await browser.storage.local.set({ [DRAFT_STORAGE_KEY]: text.value })
+  }
+  else {
+    await browser.storage.local.remove(DRAFT_STORAGE_KEY)
+  }
 })
 
 function toggleItrans() {
@@ -371,10 +406,12 @@ function clearText() {
 
 onMounted(async() => {
   installOsInsertSuppress(document)
-  const res = await browser.storage.local.get(DRAFT_STORAGE_KEY)
+  const res = await browser.storage.local.get([DRAFT_STORAGE_KEY, SAVE_DRAFT_PREF_KEY])
+  if (typeof res[SAVE_DRAFT_PREF_KEY] === 'boolean')
+    saveDraftEnabled.value = res[SAVE_DRAFT_PREF_KEY]
   const draft = res[DRAFT_STORAGE_KEY]
-  // Only restore if the user hasn't already started typing while storage loads.
-  if (typeof draft === 'string' && draft && !text.value)
+  // Only restore if saving is on and the user hasn't already started typing while storage loads.
+  if (saveDraftEnabled.value && typeof draft === 'string' && draft && !text.value)
     text.value = draft
   draftReady.value = true
   textareaRef.value?.focus()
@@ -383,7 +420,7 @@ onMounted(async() => {
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
-  if (draftReady.value)
+  if (draftReady.value && saveDraftEnabled.value)
     browser.storage.local.set({ [DRAFT_STORAGE_KEY]: text.value })
 })
 </script>

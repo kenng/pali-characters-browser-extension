@@ -121,6 +121,18 @@ pnpm build
 
 And then pack files under `extension`, you can upload `extension.crx` or `extension.xpi` to appropriate extension store.
 
+## Changelog
+
+### 2.0.8 — 2026-09-12
+
+- Renamed the extension to **Pali (Pāḷi) Easy Keyboard** and refreshed store icons
+- Improved Zen Editor layout and structure
+
+### 2.0.7 — 2026-09-06
+
+- Zen Editor now has its own ITRANS toggle (independent of the popup / extension-wide setting)
+- Popup UI polish around Enable / ITRANS controls
+
 ## Credits
 
 ![](https://user-images.githubusercontent.com/11247099/127029137-6b5ad5db-76c4-4061-86ff-489911a8adfb.png)

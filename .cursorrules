@@ -50,6 +50,7 @@ Path alias: `~/` → `src/`. Prefer `import … from '~/logic/…'`.
 - Keep page-injection logic in content script + `src/logic/`; keep chrome UI in popup/options/editor
 - Log with `pali-ext:` prefix when debugging extension runtime
 - i18n strings: `extension/_locales/{en,zh_CN}/messages.json`; manifest uses `__MSG_*__`
+- **When adding or modifying a user-facing feature**: bump `version` in `package.json` (semver; patch for fixes/small changes, minor for new features) and add a dated entry under the Changelog section in `README.md`. Manifest version is derived from `package.json` — do not edit `extension/manifest.json` by hand.
 
 ## Testing
 
