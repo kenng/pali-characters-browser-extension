@@ -1,55 +1,83 @@
 <template>
   <div
-    class="min-h-screen flex flex-col bg-[#FAF9F6] text-[#2D3436] font-sans transition-colors duration-500 overflow-x-hidden">
+    class="min-h-screen flex flex-col bg-[#FAF9F6] text-[#2D3436] font-sans transition-colors duration-500 overflow-x-hidden"
+  >
     <!-- Sophisticated Header -->
-    <nav class="fixed top-0 left-0 right-0 z-40 px-6 py-4 flex items-center justify-between transition-all duration-500"
-      :class="[isScrolled ? 'bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-100' : 'bg-transparent']">
+    <nav
+      class="fixed top-0 left-0 right-0 z-40 px-6 py-4 flex items-center justify-between transition-all duration-500"
+      :class="[isScrolled ? 'bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-100' : 'bg-transparent']"
+    >
       <div class="flex items-center gap-3 group cursor-default">
         <div
-          class="w-9 h-9 bg-[#E49B0F] rounded-xl flex items-center justify-center text-white font-serif italic text-lg shadow-lg shadow-[#E49B0F]/20 group-hover:rotate-12 transition-transform duration-500">
-          ā</div>
+          class="w-9 h-9 bg-[#E49B0F] rounded-xl flex items-center justify-center text-white font-serif italic text-lg shadow-lg shadow-[#E49B0F]/20 group-hover:rotate-12 transition-transform duration-500"
+        >
+          ā
+        </div>
         <div>
-          <h1 class="text-sm font-bold tracking-tight text-gray-900 leading-none">Pāli Zen</h1>
-          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mt-1">Focused Writing</p>
+          <h1 class="text-sm font-bold tracking-tight text-gray-900 leading-none">
+            Pāli Zen
+          </h1>
+          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mt-1">
+            Focused Writing
+          </p>
         </div>
       </div>
 
       <div class="flex items-center gap-2 md:gap-4">
-        <div class="flex items-center gap-2 mr-1"
-          title="ITRANS in this editor only (does not change the extension-wide setting)">
+        <div
+          class="flex items-center gap-2 mr-1"
+          title="ITRANS in this editor only (does not change the extension-wide setting)"
+        >
           <span class="text-[9px] font-bold uppercase tracking-tighter text-gray-400 hidden sm:inline">ITRANS</span>
-          <button class="w-8 h-4 rounded-full transition-colors relative"
-            :class="isItransEnabled ? 'bg-[#E49B0F]' : 'bg-gray-200'" :aria-pressed="isItransEnabled"
-            aria-label="Toggle ITRANS in this editor" @click="toggleItrans">
+          <button
+            class="w-8 h-4 rounded-full transition-colors relative"
+            :class="isItransEnabled ? 'bg-[#E49B0F]' : 'bg-gray-200'"
+            :aria-pressed="isItransEnabled"
+            aria-label="Toggle ITRANS in this editor"
+            @click="toggleItrans"
+          >
             <div
               class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full shadow-sm transform transition-transform"
-              :class="{ 'translate-x-4': isItransEnabled }"></div>
+              :class="{ 'translate-x-4': isItransEnabled }"
+            ></div>
           </button>
         </div>
-        <button @click="toggleFullscreen"
+        <button
           class="p-2 rounded-full hover:bg-white hover:shadow-sm transition-all text-gray-400 hover:text-[#E49B0F]"
-          :class="{ 'text-[#E49B0F]': isFullscreen }" title="Toggle Full Screen">
+          :class="{ 'text-[#E49B0F]': isFullscreen }"
+          title="Toggle Full Screen"
+          @click="toggleFullscreen"
+        >
           <carbon-minimize v-if="isFullscreen" class="text-xl" />
           <carbon-maximize v-else class="text-xl" />
         </button>
-        <button @click="isPinned = !isPinned"
+        <button
           class="hidden md:flex p-2 rounded-full hover:bg-white hover:shadow-sm transition-all text-gray-400 hover:text-[#E49B0F]"
-          :class="{ 'text-[#E49B0F] bg-white shadow-sm': isPinned }" title="Pin Helper to Sidebar">
+          :class="{ 'text-[#E49B0F] bg-white shadow-sm': isPinned }"
+          title="Pin Helper to Sidebar"
+          @click="isPinned = !isPinned"
+        >
           <carbon-pin class="text-xl" :class="{ 'rotate-45': isPinned }" />
         </button>
-        <button @click="showHelp = !showHelp"
+        <button
           class="p-2 rounded-full hover:bg-white hover:shadow-sm transition-all text-gray-400 hover:text-[#E49B0F]"
-          title="Keyboard Shortcuts">
+          title="Keyboard Shortcuts"
+          @click="showHelp = !showHelp"
+        >
           <carbon-keyboard class="text-xl" />
         </button>
-        <button @click="copyToClipboard"
-          class="flex items-center gap-2 px-6 py-2 bg-[#2D3436] text-white rounded-full hover:bg-black transition-all shadow-md active:scale-95 text-xs font-bold uppercase tracking-widest leading-none h-[40px]">
+        <button
+          class="flex items-center gap-2 px-6 py-2 bg-[#2D3436] text-white rounded-full hover:bg-black transition-all shadow-md active:scale-95 text-xs font-bold uppercase tracking-widest leading-none h-[40px]"
+          @click="copyToClipboard"
+        >
           <carbon-copy />
           <span class="hidden md:inline">Copy All</span>
         </button>
-        <button @click="clearText"
+        <button
           class="p-2 rounded-full hover:bg-red-50 text-gray-300 hover:text-red-400 transition-colors"
-          title="Clear everything">
+          title="Clear everything"
+          @click="clearText"
+        >
           <carbon-trash-can class="text-xl" />
         </button>
       </div>
@@ -57,17 +85,30 @@
 
     <div class="flex flex-1 relative">
       <!-- Content Area -->
-      <main class="flex-1 flex flex-col items-center pt-24 pb-12 px-6 transition-all duration-500 ease-in-out"
-        :class="[isPinned ? 'md:mr-[320px]' : 'w-full max-w-4xl mx-auto']">
+      <main
+        class="flex-1 flex flex-col items-center pt-24 pb-12 px-6 transition-all duration-500 ease-in-out"
+        :class="[isPinned ? 'md:mr-[320px]' : 'w-full max-w-4xl mx-auto']"
+      >
         <!-- Premium Character Toolbar -->
-        <div class="w-full flex justify-center mb-12 animate-fade-in transition-all duration-700"
-          :class="[isScrolled ? 'opacity-40 hover:opacity-100' : 'opacity-100']">
+        <div
+          class="w-full flex justify-center mb-12 animate-fade-in transition-all duration-700"
+          :class="[isScrolled ? 'opacity-40 hover:opacity-100' : 'opacity-100']"
+        >
           <div
-            class="bg-white/90 backdrop-blur-xl p-2 rounded-[28px] shadow-[0_10px_40px_rgba(228,155,15,0.08)] border border-white/50 flex flex-wrap gap-1 items-center justify-center px-4 py-2">
-            <div v-for="(group, name) in charGroups" :key="name"
-              class="flex gap-0.5 items-center px-2 py-1 border-r border-gray-100 last:border-0">
-              <button v-for="char in group" :key="char" @mousedown.prevent @click="insertChar(char)"
-                class="w-8 h-8 md:w-11 md:h-11 flex items-center justify-center hover:bg-[#E49B0F]/10 hover:text-[#E49B0F] rounded-xl transition-all text-lg md:text-xl font-medium active:scale-90">
+            class="bg-white/90 backdrop-blur-xl p-2 rounded-[28px] shadow-[0_10px_40px_rgba(228,155,15,0.08)] border border-white/50 flex flex-wrap gap-1 items-center justify-center px-4 py-2"
+          >
+            <div
+              v-for="(group, name) in charGroups"
+              :key="name"
+              class="flex gap-0.5 items-center px-2 py-1 border-r border-gray-100 last:border-0"
+            >
+              <button
+                v-for="char in group"
+                :key="char"
+                class="w-8 h-8 md:w-11 md:h-11 flex items-center justify-center hover:bg-[#E49B0F]/10 hover:text-[#E49B0F] rounded-xl transition-all text-lg md:text-xl font-medium active:scale-90"
+                @mousedown.prevent
+                @click="insertChar(char)"
+              >
                 {{ char }}
               </button>
             </div>
@@ -76,25 +117,35 @@
 
         <!-- Writing Column -->
         <div class="w-full max-w-2xl flex-1 flex flex-col">
-          <textarea ref="textareaRef" v-model="text" placeholder="Peace begins with the first word..."
+          <textarea
+            ref="textareaRef"
+            v-model="text"
+            placeholder="Peace begins with the first word..."
             class="flex-1 w-full bg-transparent p-0 text-2xl md:text-3xl leading-[1.7] resize-none focus:outline-none font-serif text-[#2D3436] placeholder-[#E49B0F]/20 min-h-[60vh] pb-32"
-            @keydown="handleKeydown"></textarea>
+            @keydown="handleKeydown"
+          ></textarea>
         </div>
       </main>
 
       <!-- Pinned Sidebar -->
-      <aside v-if="isPinned"
-        class="hidden md:flex fixed right-0 top-0 bottom-0 w-[320px] bg-white border-l border-gray-100 shadow-2xl z-20 flex-col pt-24 px-8 overflow-y-auto custom-scrollbar animate-slide-left">
+      <aside
+        v-if="isPinned"
+        class="hidden md:flex fixed right-0 top-0 bottom-0 w-[320px] bg-white border-l border-gray-100 shadow-2xl z-20 flex-col pt-24 px-8 overflow-y-auto custom-scrollbar animate-slide-left"
+      >
         <div class="flex justify-between items-center mb-8">
           <div>
-            <h2 class="text-lg font-bold tracking-tight">Quick Reference</h2>
-            <p class="text-[9px] text-[#E49B0F] font-bold uppercase tracking-[0.2em] mt-1">Personal Assistant</p>
+            <h2 class="text-lg font-bold tracking-tight">
+              Quick Reference
+            </h2>
+            <p class="text-[9px] text-[#E49B0F] font-bold uppercase tracking-[0.2em] mt-1">
+              Personal Assistant
+            </p>
           </div>
-          <button @click="isPinned = false" class="p-1.5 rounded-full hover:bg-gray-50 text-gray-300 transition-colors">
+          <button class="p-1.5 rounded-full hover:bg-gray-50 text-gray-300 transition-colors" @click="isPinned = false">
             <carbon-close class="text-lg" />
           </button>
         </div>
-        <div v-html="keyboardHelpContent" @click="handleHelperClick" class="text-sm"></div>
+        <div class="text-sm" @click="handleHelperClick" v-html="keyboardHelpContent"></div>
         <div class="mt-8 p-5 bg-amber-50 rounded-2xl border border-amber-100 mb-8">
           <div class="flex gap-2 text-amber-800 font-bold text-[10px] mb-1 uppercase tracking-wider">
             <carbon-information class="text-xs" />
@@ -110,30 +161,43 @@
 
     <!-- Sophisticated Overlay Components -->
     <Transition name="fade">
-      <div v-if="showHelp"
+      <div
+        v-if="showHelp"
         class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-[#2D3436]/10 backdrop-blur-md"
-        @click.self="showHelp = false">
+        @click.self="showHelp = false"
+      >
         <div
-          class="bg-white rounded-[40px] shadow-[0_40px_100px_rgba(228,155,15,0.15)] max-w-lg w-full p-10 animate-scale-up border border-white flex flex-col h-full max-h-[85vh]">
+          class="bg-white rounded-[40px] shadow-[0_40px_100px_rgba(228,155,15,0.15)] max-w-lg w-full p-10 animate-scale-up border border-white flex flex-col h-full max-h-[85vh]"
+        >
           <div class="flex justify-between items-center mb-10">
             <div>
-              <h2 class="text-2xl font-bold tracking-tight">Keyboard Guide</h2>
-              <p class="text-[10px] text-[#E49B0F] font-bold uppercase tracking-[0.2em] mt-2">The Golden Rule of
-                Efficiency</p>
+              <h2 class="text-2xl font-bold tracking-tight">
+                Keyboard Guide
+              </h2>
+              <p class="text-[10px] text-[#E49B0F] font-bold uppercase tracking-[0.2em] mt-2">
+                The Golden Rule of
+                Efficiency
+              </p>
             </div>
             <div class="flex items-center gap-2">
-              <button @click="isPinned = !isPinned; showHelp = false"
+              <button
                 class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-xl text-gray-400 hover:text-[#E49B0F] transition-colors"
-                title="Pin to sidebar">
+                title="Pin to sidebar"
+                @click="isPinned = !isPinned; showHelp = false"
+              >
                 <carbon-pin class="text-xl" />
               </button>
-              <button @click="showHelp = false"
-                class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-xl text-gray-400 hover:text-[#E49B0F] transition-colors">&times;</button>
+              <button
+                class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-xl text-gray-400 hover:text-[#E49B0F] transition-colors"
+                @click="showHelp = false"
+              >
+                &times;
+              </button>
             </div>
           </div>
 
           <div class="flex-1 overflow-y-auto pr-4 custom-scrollbar space-y-8">
-            <div v-html="keyboardHelpContent" @click="handleHelperClick"></div>
+            <div @click="handleHelperClick" v-html="keyboardHelpContent"></div>
 
             <div class="mt-8 p-6 bg-amber-50 rounded-2xl border border-amber-100">
               <div class="flex gap-3 text-amber-800 font-bold text-sm mb-2">
@@ -147,17 +211,23 @@
             </div>
           </div>
 
-          <button @click="showHelp = false"
-            class="mt-10 w-full py-5 bg-[#E49B0F] hover:bg-[#D48B00] text-white rounded-3xl font-bold transition-all shadow-xl shadow-[#E49B0F]/20 active:scale-[0.97]">I've
-            got it</button>
+          <button
+            class="mt-10 w-full py-5 bg-[#E49B0F] hover:bg-[#D48B00] text-white rounded-3xl font-bold transition-all shadow-xl shadow-[#E49B0F]/20 active:scale-[0.97]"
+            @click="showHelp = false"
+          >
+            I've
+            got it
+          </button>
         </div>
       </div>
     </Transition>
 
     <!-- Copy Status Toast -->
     <Transition name="slide-up">
-      <div v-if="showToast"
-        class="fixed bottom-12 left-1/2 -translate-x-1/2 bg-[#E49B0F] text-white px-8 py-4 rounded-full shadow-2xl shadow-[#E49B0F]/30 flex items-center gap-3 font-bold text-sm animate-fade-in z-[60] border border-white/20">
+      <div
+        v-if="showToast"
+        class="fixed bottom-12 left-1/2 -translate-x-1/2 bg-[#E49B0F] text-white px-8 py-4 rounded-full shadow-2xl shadow-[#E49B0F]/30 flex items-center gap-3 font-bold text-sm animate-fade-in z-[60] border border-white/20"
+      >
         <carbon-checkmark />
         Copied to clipboard
       </div>
@@ -166,13 +236,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, onUnmounted } from 'vue'
+import { ref, watch, onMounted, computed, onUnmounted } from 'vue'
+import { useDebounceFn } from '@vueuse/core'
+import browser from 'webextension-polyfill'
 import { onItransKeyDown, resetItransBuffer } from '~/logic/itrans'
 import { onKeyDown } from '~/logic/pali-keyboard'
 import { getKeyboardMappingStr } from '~/logic/pali-keyboard-help'
 import { armOsInsertSuppress, installOsInsertSuppress } from '~/logic/os-insert-suppress'
 
+const DRAFT_STORAGE_KEY = 'zenEditorDraft'
+
 const text = ref('')
+const draftReady = ref(false)
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
 const showHelp = ref(false)
 const showToast = ref(false)
@@ -181,6 +256,16 @@ const isFullscreen = ref(false)
 const isPinned = ref(false)
 /** Editor-only ITRANS preference; independent of popup `isItransEnabled`. Defaults on. */
 const isItransEnabled = ref(true)
+
+const saveDraft = useDebounceFn(async(value: string) => {
+  await browser.storage.local.set({ [DRAFT_STORAGE_KEY]: value })
+}, 300)
+
+watch(text, (value) => {
+  if (!draftReady.value)
+    return
+  saveDraft(value)
+})
 
 function toggleItrans() {
   isItransEnabled.value = !isItransEnabled.value
@@ -192,10 +277,11 @@ function toggleFullscreen() {
   if (!document.fullscreenElement) {
     document.documentElement.requestFullscreen().then(() => {
       isFullscreen.value = true
-    }).catch(err => {
+    }).catch((err) => {
       console.error(`Error attempting to enable full-screen mode: ${err.message}`)
     })
-  } else {
+  }
+  else {
     if (document.exitFullscreen) {
       document.exitFullscreen().then(() => {
         isFullscreen.value = false
@@ -263,9 +349,8 @@ function handleKeydown(event: KeyboardEvent) {
 function handleHelperClick(event: MouseEvent) {
   const target = event.target as HTMLElement
   const btn = target.closest('.pk-insert-btn') as HTMLElement
-  if (btn && btn.dataset.char) {
+  if (btn && btn.dataset.char)
     insertChar(btn.dataset.char)
-  }
 }
 
 function copyToClipboard() {
@@ -284,14 +369,22 @@ function clearText() {
   }
 }
 
-onMounted(() => {
+onMounted(async() => {
   installOsInsertSuppress(document)
+  const res = await browser.storage.local.get(DRAFT_STORAGE_KEY)
+  const draft = res[DRAFT_STORAGE_KEY]
+  // Only restore if the user hasn't already started typing while storage loads.
+  if (typeof draft === 'string' && draft && !text.value)
+    text.value = draft
+  draftReady.value = true
   textareaRef.value?.focus()
   window.addEventListener('scroll', handleScroll)
 })
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
+  if (draftReady.value)
+    browser.storage.local.set({ [DRAFT_STORAGE_KEY]: text.value })
 })
 </script>
 
