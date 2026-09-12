@@ -123,6 +123,10 @@ And then pack files under `extension`, you can upload `extension.crx` or `extens
 
 ## Changelog
 
+### 2.0.10 — 2026-09-12
+
+- Zen Editor: font size control in the header (default 16px)
+
 ### 2.0.9 — 2026-09-12
 
 - Zen Editor: multiple pages with tabs; double-click a tab to rename

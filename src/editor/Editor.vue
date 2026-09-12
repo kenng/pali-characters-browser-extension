@@ -25,6 +25,28 @@
 
       <div class="flex items-center gap-2 md:gap-4">
         <div
+          class="flex items-center gap-1 mr-1"
+          title="Editor font size"
+        >
+          <button
+            class="w-7 h-7 rounded-full flex items-center justify-center text-gray-400 hover:text-[#E49B0F] hover:bg-white hover:shadow-sm transition-all disabled:opacity-30 disabled:pointer-events-none"
+            :disabled="fontSize <= FONT_SIZE_MIN"
+            aria-label="Decrease font size"
+            @click="adjustFontSize(-2)"
+          >
+            <span class="text-sm font-bold leading-none">−</span>
+          </button>
+          <span class="text-[10px] font-bold text-gray-500 tabular-nums min-w-[2.25rem] text-center">{{ fontSize }}px</span>
+          <button
+            class="w-7 h-7 rounded-full flex items-center justify-center text-gray-400 hover:text-[#E49B0F] hover:bg-white hover:shadow-sm transition-all disabled:opacity-30 disabled:pointer-events-none"
+            :disabled="fontSize >= FONT_SIZE_MAX"
+            aria-label="Increase font size"
+            @click="adjustFontSize(2)"
+          >
+            <span class="text-sm font-bold leading-none">+</span>
+          </button>
+        </div>
+        <div
           class="flex items-center gap-2 mr-1"
           title="Save editor text to local storage and restore it next time"
         >
@@ -192,7 +214,8 @@
             ref="textareaRef"
             v-model="text"
             placeholder="Peace begins with the first word..."
-            class="flex-1 w-full bg-transparent p-0 text-2xl md:text-3xl leading-[1.7] resize-none focus:outline-none font-serif text-[#2D3436] placeholder-[#E49B0F]/20 min-h-[60vh] pb-32"
+            class="flex-1 w-full bg-transparent p-0 leading-[1.7] resize-none focus:outline-none font-serif text-[#2D3436] placeholder-[#E49B0F]/20 min-h-[60vh] pb-32"
+            :style="{ fontSize: `${fontSize}px` }"
             @keydown="handleKeydown"
           ></textarea>
         </div>
@@ -318,6 +341,10 @@ import { armOsInsertSuppress, installOsInsertSuppress } from '~/logic/os-insert-
 const DRAFT_STORAGE_KEY = 'zenEditorDraft'
 const PAGES_STORAGE_KEY = 'zenEditorPages'
 const SAVE_DRAFT_PREF_KEY = 'zenEditorSaveDraft'
+const FONT_SIZE_STORAGE_KEY = 'zenEditorFontSize'
+const FONT_SIZE_DEFAULT = 16
+const FONT_SIZE_MIN = 12
+const FONT_SIZE_MAX = 40
 
 interface ZenPage {
   id: string
@@ -348,6 +375,8 @@ const activePageId = ref(pages.value[0].id)
 const draftReady = ref(false)
 /** Persist editor text across sessions. Defaults on. */
 const saveDraftEnabled = ref(true)
+/** Writing area font size in px. Defaults to 16. */
+const fontSize = ref(FONT_SIZE_DEFAULT)
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
 const showHelp = ref(false)
 const showToast = ref(false)
@@ -403,6 +432,20 @@ watch(saveDraftEnabled, async(enabled) => {
   else
     await browser.storage.local.remove([PAGES_STORAGE_KEY, DRAFT_STORAGE_KEY])
 })
+
+watch(fontSize, async(size) => {
+  if (!draftReady.value)
+    return
+  await browser.storage.local.set({ [FONT_SIZE_STORAGE_KEY]: size })
+})
+
+function clampFontSize(size: number) {
+  return Math.min(FONT_SIZE_MAX, Math.max(FONT_SIZE_MIN, size))
+}
+
+function adjustFontSize(delta: number) {
+  fontSize.value = clampFontSize(fontSize.value + delta)
+}
 
 function setRenameInputRef(el: unknown, pageId: string) {
   if (el instanceof HTMLInputElement)
@@ -608,9 +651,12 @@ onMounted(async() => {
     DRAFT_STORAGE_KEY,
     PAGES_STORAGE_KEY,
     SAVE_DRAFT_PREF_KEY,
+    FONT_SIZE_STORAGE_KEY,
   ])
   if (typeof res[SAVE_DRAFT_PREF_KEY] === 'boolean')
     saveDraftEnabled.value = res[SAVE_DRAFT_PREF_KEY]
+  if (typeof res[FONT_SIZE_STORAGE_KEY] === 'number')
+    fontSize.value = clampFontSize(res[FONT_SIZE_STORAGE_KEY])
   // Only restore if saving is on and the user hasn't already started typing while storage loads.
   if (saveDraftEnabled.value && !text.value)
     hydrateFromStorage(res[PAGES_STORAGE_KEY], res[DRAFT_STORAGE_KEY])
