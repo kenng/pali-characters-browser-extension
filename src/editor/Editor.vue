@@ -29,7 +29,7 @@
           title="Editor font size"
         >
           <button
-            class="w-7 h-7 rounded-full flex items-center justify-center text-gray-400 hover:text-[#E49B0F] hover:bg-white hover:shadow-sm transition-all disabled:opacity-30 disabled:pointer-events-none"
+            class="w-7 h-7 rounded-full flex items-center justify-center text-gray-400 hover:text-[#E49B0F] transition-all disabled:opacity-30 disabled:pointer-events-none"
             :disabled="fontSize <= FONT_SIZE_MIN"
             aria-label="Decrease font size"
             @click="adjustFontSize(-2)"
@@ -38,7 +38,7 @@
           </button>
           <span class="text-[10px] font-bold text-gray-500 tabular-nums min-w-[2.25rem] text-center">{{ fontSize }}px</span>
           <button
-            class="w-7 h-7 rounded-full flex items-center justify-center text-gray-400 hover:text-[#E49B0F] hover:bg-white hover:shadow-sm transition-all disabled:opacity-30 disabled:pointer-events-none"
+            class="w-7 h-7 rounded-full flex items-center justify-center text-gray-400 hover:text-[#E49B0F] transition-all disabled:opacity-30 disabled:pointer-events-none"
             :disabled="fontSize >= FONT_SIZE_MAX"
             aria-label="Increase font size"
             @click="adjustFontSize(2)"
@@ -83,7 +83,7 @@
           </button>
         </div>
         <button
-          class="p-2 rounded-full hover:bg-white hover:shadow-sm transition-all text-gray-400 hover:text-[#E49B0F]"
+          class="p-2 rounded-full transition-all text-gray-400 hover:text-[#E49B0F]"
           :class="{ 'text-[#E49B0F]': isFullscreen }"
           title="Toggle Full Screen"
           @click="toggleFullscreen"
@@ -92,15 +92,25 @@
           <carbon-maximize v-else class="text-xl" />
         </button>
         <button
-          class="hidden md:flex p-2 rounded-full hover:bg-white hover:shadow-sm transition-all text-gray-400 hover:text-[#E49B0F]"
-          :class="{ 'text-[#E49B0F] bg-white shadow-sm': isPinned }"
+          class="hidden md:flex p-2 rounded-full transition-all text-gray-400 hover:text-[#E49B0F]"
+          :class="{ 'text-[#E49B0F]': isPinned }"
           title="Pin Helper to Sidebar"
           @click="isPinned = !isPinned"
         >
           <carbon-pin class="text-xl" :class="{ 'rotate-45': isPinned }" />
         </button>
         <button
-          class="p-2 rounded-full hover:bg-white hover:shadow-sm transition-all text-gray-400 hover:text-[#E49B0F]"
+          class="p-2 rounded-full transition-all text-gray-400 hover:text-[#E49B0F]"
+          :class="{ 'text-[#E49B0F]': showCharToolbar }"
+          title="Toggle character toolbar"
+          aria-label="Toggle character toolbar"
+          :aria-pressed="showCharToolbar"
+          @click="showCharToolbar = !showCharToolbar"
+        >
+          <carbon-idea class="text-xl" />
+        </button>
+        <button
+          class="p-2 rounded-full transition-all text-gray-400 hover:text-[#E49B0F]"
           title="Keyboard Shortcuts"
           @click="showHelp = !showHelp"
         >
@@ -111,10 +121,10 @@
           @click="copyToClipboard"
         >
           <carbon-copy />
-          <span class="hidden md:inline">Copy All</span>
+          <span class="hidden md:inline">Copy</span>
         </button>
         <button
-          class="p-2 rounded-full hover:bg-red-50 text-gray-300 hover:text-red-400 transition-colors"
+          class="p-2 rounded-full text-gray-300 hover:text-red-400 transition-colors"
           title="Clear everything"
           @click="clearText"
         >
@@ -184,6 +194,7 @@
       >
         <!-- Premium Character Toolbar -->
         <div
+          v-if="showCharToolbar"
           class="w-full flex justify-center mb-12 animate-fade-in transition-all duration-700"
           :class="[isScrolled ? 'opacity-40 hover:opacity-100' : 'opacity-100']"
         >
@@ -205,6 +216,14 @@
                 {{ char }}
               </button>
             </div>
+            <button
+              class="w-8 h-8 md:w-11 md:h-11 flex items-center justify-center text-gray-300 hover:text-[#E49B0F] hover:bg-[#E49B0F]/10 rounded-xl transition-all"
+              title="Hide character toolbar"
+              aria-label="Hide character toolbar"
+              @click="showCharToolbar = false"
+            >
+              <carbon-close class="text-lg" />
+            </button>
           </div>
         </div>
 
@@ -342,6 +361,7 @@ const DRAFT_STORAGE_KEY = 'zenEditorDraft'
 const PAGES_STORAGE_KEY = 'zenEditorPages'
 const SAVE_DRAFT_PREF_KEY = 'zenEditorSaveDraft'
 const FONT_SIZE_STORAGE_KEY = 'zenEditorFontSize'
+const CHAR_TOOLBAR_PREF_KEY = 'zenEditorCharToolbar'
 const FONT_SIZE_DEFAULT = 16
 const FONT_SIZE_MIN = 12
 const FONT_SIZE_MAX = 40
@@ -377,6 +397,8 @@ const draftReady = ref(false)
 const saveDraftEnabled = ref(true)
 /** Writing area font size in px. Defaults to 16. */
 const fontSize = ref(FONT_SIZE_DEFAULT)
+/** Character toolbar visibility. Defaults on. */
+const showCharToolbar = ref(true)
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
 const showHelp = ref(false)
 const showToast = ref(false)
@@ -440,6 +462,13 @@ watch(fontSize, async(size) => {
     return
   const storage = await getZenLocalStorage()
   await storage.set({ [FONT_SIZE_STORAGE_KEY]: size })
+})
+
+watch(showCharToolbar, async(visible) => {
+  if (!draftReady.value)
+    return
+  const storage = await getZenLocalStorage()
+  await storage.set({ [CHAR_TOOLBAR_PREF_KEY]: visible })
 })
 
 function clampFontSize(size: number) {
@@ -656,11 +685,14 @@ onMounted(async() => {
     PAGES_STORAGE_KEY,
     SAVE_DRAFT_PREF_KEY,
     FONT_SIZE_STORAGE_KEY,
+    CHAR_TOOLBAR_PREF_KEY,
   ])
   if (typeof res[SAVE_DRAFT_PREF_KEY] === 'boolean')
     saveDraftEnabled.value = res[SAVE_DRAFT_PREF_KEY]
   if (typeof res[FONT_SIZE_STORAGE_KEY] === 'number')
     fontSize.value = clampFontSize(res[FONT_SIZE_STORAGE_KEY])
+  if (typeof res[CHAR_TOOLBAR_PREF_KEY] === 'boolean')
+    showCharToolbar.value = res[CHAR_TOOLBAR_PREF_KEY]
   // Only restore if saving is on and the user hasn't already started typing while storage loads.
   if (saveDraftEnabled.value && !text.value)
     hydrateFromStorage(res[PAGES_STORAGE_KEY], res[DRAFT_STORAGE_KEY])

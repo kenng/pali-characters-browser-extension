@@ -123,6 +123,10 @@ And then pack files under `extension`, you can upload `extension.crx` or `extens
 
 ## Changelog
 
+### 2.0.12 — 2026-09-12
+
+- Zen Editor: character toolbar can be toggled off; a lightbulb restores it (preference remembered)
+
 ### 2.0.11 — 2026-09-12
 
 - Dev: `pnpm run dev:editor` opens a hot-reloaded Zen Editor in the browser (no extension load required)

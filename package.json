@@ -1,6 +1,6 @@
 {
   "name": "pali-input-browser-extension",
-  "version": "2.0.11",
+  "version": "2.0.12",
   "displayName": "Pāli Characters Inputs",
   "description": "Browser extension to input Pāli characters easily",
   "scripts": {
