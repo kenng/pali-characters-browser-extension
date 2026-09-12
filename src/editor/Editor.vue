@@ -101,10 +101,63 @@
       </div>
     </nav>
 
+    <!-- Page tabs -->
+    <div
+      class="fixed top-[72px] left-0 right-0 z-30 px-6 pt-1 pb-2 transition-all duration-500"
+      :class="[isScrolled ? 'bg-white/80 backdrop-blur-md' : 'bg-transparent', isPinned ? 'md:pr-[332px]' : '']"
+    >
+      <div class="flex items-center gap-1 overflow-x-auto custom-scrollbar max-w-4xl mx-auto">
+        <div
+          v-for="page in pages"
+          :key="page.id"
+          class="group relative flex items-center shrink-0"
+        >
+          <button
+            v-if="renamingPageId !== page.id"
+            class="px-3.5 py-1.5 rounded-full text-xs font-bold tracking-wide transition-all max-w-[10rem] truncate"
+            :class="page.id === activePageId
+              ? 'bg-[#E49B0F]/15 text-[#E49B0F]'
+              : 'text-gray-400 hover:text-gray-600 hover:bg-white/70'"
+            :title="page.name"
+            @click="switchPage(page.id)"
+            @dblclick.stop="startRename(page)"
+          >
+            {{ page.name }}
+          </button>
+          <input
+            v-else
+            :ref="(el) => setRenameInputRef(el, page.id)"
+            v-model="renameDraft"
+            class="px-3 py-1.5 rounded-full text-xs font-bold tracking-wide bg-white border border-[#E49B0F]/40 text-gray-800 outline-none shadow-sm w-28 max-w-[10rem]"
+            maxlength="40"
+            @keydown.enter.prevent="commitRename"
+            @keydown.escape.prevent="cancelRename"
+            @blur="commitRename"
+            @click.stop
+          >
+          <button
+            v-if="pages.length > 1 && renamingPageId !== page.id"
+            class="absolute -right-1 -top-1 w-4 h-4 rounded-full bg-white border border-gray-100 text-gray-300 hover:text-red-400 hover:border-red-100 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center shadow-sm"
+            title="Delete page"
+            @click.stop="deletePage(page.id)"
+          >
+            <span class="text-[10px] leading-none">&times;</span>
+          </button>
+        </div>
+        <button
+          class="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-gray-300 hover:text-[#E49B0F] hover:bg-[#E49B0F]/10 transition-all"
+          title="New page"
+          @click="addPage"
+        >
+          <carbon-add class="text-lg" />
+        </button>
+      </div>
+    </div>
+
     <div class="flex flex-1 relative">
       <!-- Content Area -->
       <main
-        class="flex-1 flex flex-col items-center pt-24 pb-12 px-6 transition-all duration-500 ease-in-out"
+        class="flex-1 flex flex-col items-center pt-32 pb-12 px-6 transition-all duration-500 ease-in-out"
         :class="[isPinned ? 'md:mr-[320px]' : 'w-full max-w-4xl mx-auto']"
       >
         <!-- Premium Character Toolbar -->
@@ -148,7 +201,7 @@
       <!-- Pinned Sidebar -->
       <aside
         v-if="isPinned"
-        class="hidden md:flex fixed right-0 top-0 bottom-0 w-[320px] bg-white border-l border-gray-100 shadow-2xl z-20 flex-col pt-24 px-8 overflow-y-auto custom-scrollbar animate-slide-left"
+        class="hidden md:flex fixed right-0 top-0 bottom-0 w-[320px] bg-white border-l border-gray-100 shadow-2xl z-20 flex-col pt-32 px-8 overflow-y-auto custom-scrollbar animate-slide-left"
       >
         <div class="flex justify-between items-center mb-8">
           <div>
@@ -254,7 +307,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, computed, onUnmounted } from 'vue'
+import { ref, watch, onMounted, computed, onUnmounted, nextTick } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import browser from 'webextension-polyfill'
 import { onItransKeyDown, resetItransBuffer } from '~/logic/itrans'
@@ -263,9 +316,35 @@ import { getKeyboardMappingStr } from '~/logic/pali-keyboard-help'
 import { armOsInsertSuppress, installOsInsertSuppress } from '~/logic/os-insert-suppress'
 
 const DRAFT_STORAGE_KEY = 'zenEditorDraft'
+const PAGES_STORAGE_KEY = 'zenEditorPages'
 const SAVE_DRAFT_PREF_KEY = 'zenEditorSaveDraft'
 
-const text = ref('')
+interface ZenPage {
+  id: string
+  name: string
+  content: string
+}
+
+interface ZenPagesState {
+  pages: ZenPage[]
+  activePageId: string
+}
+
+function createPageId() {
+  return `p-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`
+}
+
+function createPage(name: string, content = ''): ZenPage {
+  return { id: createPageId(), name, content }
+}
+
+function defaultPagesState(): ZenPagesState {
+  const page = createPage('Page 1')
+  return { pages: [page], activePageId: page.id }
+}
+
+const pages = ref<ZenPage[]>(defaultPagesState().pages)
+const activePageId = ref(pages.value[0].id)
 const draftReady = ref(false)
 /** Persist editor text across sessions. Defaults on. */
 const saveDraftEnabled = ref(true)
@@ -278,29 +357,148 @@ const isPinned = ref(false)
 /** Editor-only ITRANS preference; independent of popup `isItransEnabled`. Defaults on. */
 const isItransEnabled = ref(true)
 
-const persistDraft = useDebounceFn(async(value: string) => {
+const renamingPageId = ref<string | null>(null)
+const renameDraft = ref('')
+const renameInputEls = new Map<string, HTMLInputElement>()
+
+const activePage = computed(() =>
+  pages.value.find(p => p.id === activePageId.value) ?? pages.value[0],
+)
+
+const text = computed({
+  get: () => activePage.value?.content ?? '',
+  set: (value: string) => {
+    const page = pages.value.find(p => p.id === activePageId.value)
+    if (page)
+      page.content = value
+  },
+})
+
+function pagesState(): ZenPagesState {
+  return {
+    pages: pages.value.map(p => ({ ...p })),
+    activePageId: activePageId.value,
+  }
+}
+
+const persistPages = useDebounceFn(async() => {
   if (!saveDraftEnabled.value)
     return
-  await browser.storage.local.set({ [DRAFT_STORAGE_KEY]: value })
+  await browser.storage.local.set({ [PAGES_STORAGE_KEY]: pagesState() })
+  await browser.storage.local.remove(DRAFT_STORAGE_KEY)
 }, 300)
 
-watch(text, (value) => {
+watch([pages, activePageId], () => {
   if (!draftReady.value || !saveDraftEnabled.value)
     return
-  persistDraft(value)
-})
+  persistPages()
+}, { deep: true })
 
 watch(saveDraftEnabled, async(enabled) => {
   if (!draftReady.value)
     return
   await browser.storage.local.set({ [SAVE_DRAFT_PREF_KEY]: enabled })
-  if (enabled) {
-    await browser.storage.local.set({ [DRAFT_STORAGE_KEY]: text.value })
-  }
-  else {
-    await browser.storage.local.remove(DRAFT_STORAGE_KEY)
-  }
+  if (enabled)
+    await browser.storage.local.set({ [PAGES_STORAGE_KEY]: pagesState() })
+  else
+    await browser.storage.local.remove([PAGES_STORAGE_KEY, DRAFT_STORAGE_KEY])
 })
+
+function setRenameInputRef(el: unknown, pageId: string) {
+  if (el instanceof HTMLInputElement)
+    renameInputEls.set(pageId, el)
+  else
+    renameInputEls.delete(pageId)
+}
+
+function switchPage(pageId: string) {
+  if (pageId === activePageId.value || renamingPageId.value)
+    return
+  activePageId.value = pageId
+  nextTick(() => textareaRef.value?.focus())
+}
+
+function addPage() {
+  const n = pages.value.length + 1
+  const page = createPage(`Page ${n}`)
+  pages.value.push(page)
+  activePageId.value = page.id
+  nextTick(() => {
+    textareaRef.value?.focus()
+    startRename(page)
+  })
+}
+
+function deletePage(pageId: string) {
+  if (pages.value.length <= 1)
+    return
+  const page = pages.value.find(p => p.id === pageId)
+  if (!page)
+    return
+  if (page.content.trim() && !confirm(`Delete “${page.name}”?`))
+    return
+  const idx = pages.value.findIndex(p => p.id === pageId)
+  pages.value.splice(idx, 1)
+  if (activePageId.value === pageId)
+    activePageId.value = pages.value[Math.max(0, idx - 1)].id
+  if (renamingPageId.value === pageId)
+    cancelRename()
+}
+
+function startRename(page: ZenPage) {
+  renamingPageId.value = page.id
+  renameDraft.value = page.name
+  nextTick(() => {
+    const input = renameInputEls.get(page.id)
+    if (!input)
+      return
+    input.focus()
+    input.select()
+  })
+}
+
+function commitRename() {
+  const id = renamingPageId.value
+  if (!id)
+    return
+  const page = pages.value.find(p => p.id === id)
+  const name = renameDraft.value.trim() || page?.name || 'Untitled'
+  if (page)
+    page.name = name.slice(0, 40)
+  renamingPageId.value = null
+}
+
+function cancelRename() {
+  renamingPageId.value = null
+}
+
+function hydrateFromStorage(rawPages: unknown, legacyDraft: unknown) {
+  if (rawPages && typeof rawPages === 'object' && Array.isArray((rawPages as ZenPagesState).pages)) {
+    const state = rawPages as ZenPagesState
+    const cleaned = state.pages
+      .filter(p => p && typeof p.id === 'string' && typeof p.name === 'string')
+      .map(p => ({
+        id: p.id,
+        name: p.name || 'Untitled',
+        content: typeof p.content === 'string' ? p.content : '',
+      }))
+    if (cleaned.length) {
+      pages.value = cleaned
+      activePageId.value = cleaned.some(p => p.id === state.activePageId)
+        ? state.activePageId
+        : cleaned[0].id
+      return
+    }
+  }
+
+  // Migrate legacy single-string draft into Page 1
+  if (typeof legacyDraft === 'string' && legacyDraft) {
+    const fallback = defaultPagesState()
+    fallback.pages[0].content = legacyDraft
+    pages.value = fallback.pages
+    activePageId.value = fallback.activePageId
+  }
+}
 
 function toggleItrans() {
   isItransEnabled.value = !isItransEnabled.value
@@ -398,7 +596,7 @@ function copyToClipboard() {
 }
 
 function clearText() {
-  if (text.value && confirm('Clear all text?')) {
+  if (text.value && confirm('Clear all text on this page?')) {
     text.value = ''
     textareaRef.value?.focus()
   }
@@ -406,13 +604,16 @@ function clearText() {
 
 onMounted(async() => {
   installOsInsertSuppress(document)
-  const res = await browser.storage.local.get([DRAFT_STORAGE_KEY, SAVE_DRAFT_PREF_KEY])
+  const res = await browser.storage.local.get([
+    DRAFT_STORAGE_KEY,
+    PAGES_STORAGE_KEY,
+    SAVE_DRAFT_PREF_KEY,
+  ])
   if (typeof res[SAVE_DRAFT_PREF_KEY] === 'boolean')
     saveDraftEnabled.value = res[SAVE_DRAFT_PREF_KEY]
-  const draft = res[DRAFT_STORAGE_KEY]
   // Only restore if saving is on and the user hasn't already started typing while storage loads.
-  if (saveDraftEnabled.value && typeof draft === 'string' && draft && !text.value)
-    text.value = draft
+  if (saveDraftEnabled.value && !text.value)
+    hydrateFromStorage(res[PAGES_STORAGE_KEY], res[DRAFT_STORAGE_KEY])
   draftReady.value = true
   textareaRef.value?.focus()
   window.addEventListener('scroll', handleScroll)
@@ -421,7 +622,7 @@ onMounted(async() => {
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
   if (draftReady.value && saveDraftEnabled.value)
-    browser.storage.local.set({ [DRAFT_STORAGE_KEY]: text.value })
+    browser.storage.local.set({ [PAGES_STORAGE_KEY]: pagesState() })
 })
 </script>
 

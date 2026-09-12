@@ -123,6 +123,10 @@ And then pack files under `extension`, you can upload `extension.crx` or `extens
 
 ## Changelog
 
+### 2.0.9 — 2026-09-12
+
+- Zen Editor: multiple pages with tabs; double-click a tab to rename
+
 ### 2.0.8 — 2026-09-12
 
 - Renamed the extension to **Pali (Pāḷi) Easy Keyboard** and refreshed store icons
