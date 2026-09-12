@@ -123,6 +123,10 @@ And then pack files under `extension`, you can upload `extension.crx` or `extens
 
 ## Changelog
 
+### 2.0.13 — 2026-09-12
+
+- Zen Editor: column width control at the bottom (− / px / +); click the value to type a custom width
+
 ### 2.0.12 — 2026-09-12
 
 - Zen Editor: character toolbar can be toggled off; a lightbulb restores it (preference remembered)

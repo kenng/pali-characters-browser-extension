@@ -138,7 +138,10 @@
       class="fixed top-[72px] left-0 right-0 z-30 px-6 pt-1 pb-2 transition-all duration-500"
       :class="[isScrolled ? 'bg-white/80 backdrop-blur-md' : 'bg-transparent', isPinned ? 'md:pr-[332px]' : '']"
     >
-      <div class="flex items-center gap-1 overflow-x-auto custom-scrollbar max-w-4xl mx-auto">
+      <div
+        class="flex items-center gap-1 overflow-x-auto custom-scrollbar w-full mx-auto"
+        :style="{ maxWidth: `${tabsMaxWidth}px` }"
+      >
         <div
           v-for="page in pages"
           :key="page.id"
@@ -189,8 +192,9 @@
     <div class="flex flex-1 relative">
       <!-- Content Area -->
       <main
-        class="flex-1 flex flex-col items-center pt-32 pb-12 px-6 transition-all duration-500 ease-in-out"
-        :class="[isPinned ? 'md:mr-[320px]' : 'w-full max-w-4xl mx-auto']"
+        class="flex-1 flex flex-col items-center pt-32 pb-20 px-6 transition-all duration-500 ease-in-out w-full mx-auto"
+        :class="[isPinned ? 'md:mr-[320px]' : '']"
+        :style="isPinned ? undefined : { maxWidth: `${mainMaxWidth}px` }"
       >
         <!-- Premium Character Toolbar -->
         <div
@@ -228,7 +232,10 @@
         </div>
 
         <!-- Writing Column -->
-        <div class="w-full max-w-2xl flex-1 flex flex-col">
+        <div
+          class="w-full flex-1 flex flex-col transition-[max-width] duration-300"
+          :style="{ maxWidth: `${editorWidth}px` }"
+        >
           <textarea
             ref="textareaRef"
             v-model="text"
@@ -270,6 +277,50 @@
           </p>
         </div>
       </aside>
+    </div>
+
+    <!-- Width control -->
+    <div
+      class="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1 px-2 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-gray-100 shadow-lg shadow-black/5"
+      :class="[isPinned ? 'md:-translate-x-[calc(50%+160px)]' : '']"
+      title="Editor column width"
+    >
+      <button
+        class="w-7 h-7 rounded-full flex items-center justify-center text-gray-400 hover:text-[#E49B0F] transition-all disabled:opacity-30 disabled:pointer-events-none"
+        :disabled="editorWidth <= EDITOR_WIDTH_MIN"
+        aria-label="Decrease editor width"
+        @click="adjustEditorWidth(-EDITOR_WIDTH_STEP)"
+      >
+        <span class="text-sm font-bold leading-none">−</span>
+      </button>
+      <button
+        v-if="!editingWidth"
+        class="min-w-[4.5rem] px-1 text-[11px] font-bold text-gray-500 tabular-nums text-center hover:text-[#E49B0F] transition-colors"
+        aria-label="Edit editor width"
+        @click="startEditWidth"
+      >
+        {{ editorWidth }}px
+      </button>
+      <input
+        v-else
+        ref="widthInputRef"
+        v-model="widthDraft"
+        class="w-16 px-1 py-0.5 text-[11px] font-bold text-gray-800 tabular-nums text-center bg-white border border-[#E49B0F]/40 rounded-md outline-none shadow-sm"
+        inputmode="numeric"
+        aria-label="Editor width in pixels"
+        @keydown.enter.prevent="commitEditWidth"
+        @keydown.escape.prevent="cancelEditWidth"
+        @blur="commitEditWidth"
+        @click.stop
+      >
+      <button
+        class="w-7 h-7 rounded-full flex items-center justify-center text-gray-400 hover:text-[#E49B0F] transition-all disabled:opacity-30 disabled:pointer-events-none"
+        :disabled="editorWidth >= EDITOR_WIDTH_MAX"
+        aria-label="Increase editor width"
+        @click="adjustEditorWidth(EDITOR_WIDTH_STEP)"
+      >
+        <span class="text-sm font-bold leading-none">+</span>
+      </button>
     </div>
 
     <!-- Sophisticated Overlay Components -->
@@ -339,7 +390,7 @@
     <Transition name="slide-up">
       <div
         v-if="showToast"
-        class="fixed bottom-12 left-1/2 -translate-x-1/2 bg-[#E49B0F] text-white px-8 py-4 rounded-full shadow-2xl shadow-[#E49B0F]/30 flex items-center gap-3 font-bold text-sm animate-fade-in z-[60] border border-white/20"
+        class="fixed bottom-20 left-1/2 -translate-x-1/2 bg-[#E49B0F] text-white px-8 py-4 rounded-full shadow-2xl shadow-[#E49B0F]/30 flex items-center gap-3 font-bold text-sm animate-fade-in z-[60] border border-white/20"
       >
         <carbon-checkmark />
         Copied to clipboard
@@ -361,10 +412,15 @@ const DRAFT_STORAGE_KEY = 'zenEditorDraft'
 const PAGES_STORAGE_KEY = 'zenEditorPages'
 const SAVE_DRAFT_PREF_KEY = 'zenEditorSaveDraft'
 const FONT_SIZE_STORAGE_KEY = 'zenEditorFontSize'
+const EDITOR_WIDTH_STORAGE_KEY = 'zenEditorWidth'
 const CHAR_TOOLBAR_PREF_KEY = 'zenEditorCharToolbar'
 const FONT_SIZE_DEFAULT = 16
 const FONT_SIZE_MIN = 12
 const FONT_SIZE_MAX = 40
+const EDITOR_WIDTH_DEFAULT = 672
+const EDITOR_WIDTH_MIN = 320
+const EDITOR_WIDTH_MAX = 1400
+const EDITOR_WIDTH_STEP = 40
 
 interface ZenPage {
   id: string
@@ -397,6 +453,11 @@ const draftReady = ref(false)
 const saveDraftEnabled = ref(true)
 /** Writing area font size in px. Defaults to 16. */
 const fontSize = ref(FONT_SIZE_DEFAULT)
+/** Writing column max width in px. Defaults to 672 (former max-w-2xl). */
+const editorWidth = ref(EDITOR_WIDTH_DEFAULT)
+const editingWidth = ref(false)
+const widthDraft = ref('')
+const widthInputRef = ref<HTMLInputElement | null>(null)
 /** Character toolbar visibility. Defaults on. */
 const showCharToolbar = ref(true)
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
@@ -415,6 +476,9 @@ const renameInputEls = new Map<string, HTMLInputElement>()
 const activePage = computed(() =>
   pages.value.find(p => p.id === activePageId.value) ?? pages.value[0],
 )
+
+const tabsMaxWidth = computed(() => Math.max(editorWidth.value, 672))
+const mainMaxWidth = computed(() => Math.max(editorWidth.value + 48, 896))
 
 const text = computed({
   get: () => activePage.value?.content ?? '',
@@ -464,6 +528,13 @@ watch(fontSize, async(size) => {
   await storage.set({ [FONT_SIZE_STORAGE_KEY]: size })
 })
 
+watch(editorWidth, async(width) => {
+  if (!draftReady.value)
+    return
+  const storage = await getZenLocalStorage()
+  await storage.set({ [EDITOR_WIDTH_STORAGE_KEY]: width })
+})
+
 watch(showCharToolbar, async(visible) => {
   if (!draftReady.value)
     return
@@ -477,6 +548,39 @@ function clampFontSize(size: number) {
 
 function adjustFontSize(delta: number) {
   fontSize.value = clampFontSize(fontSize.value + delta)
+}
+
+function clampEditorWidth(width: number) {
+  return Math.min(EDITOR_WIDTH_MAX, Math.max(EDITOR_WIDTH_MIN, Math.round(width)))
+}
+
+function adjustEditorWidth(delta: number) {
+  editorWidth.value = clampEditorWidth(editorWidth.value + delta)
+}
+
+function startEditWidth() {
+  widthDraft.value = String(editorWidth.value)
+  editingWidth.value = true
+  nextTick(() => {
+    const input = widthInputRef.value
+    if (!input)
+      return
+    input.focus()
+    input.select()
+  })
+}
+
+function commitEditWidth() {
+  if (!editingWidth.value)
+    return
+  const parsed = Number.parseInt(widthDraft.value.replace(/[^\d]/g, ''), 10)
+  if (!Number.isNaN(parsed))
+    editorWidth.value = clampEditorWidth(parsed)
+  editingWidth.value = false
+}
+
+function cancelEditWidth() {
+  editingWidth.value = false
 }
 
 function setRenameInputRef(el: unknown, pageId: string) {
@@ -685,12 +789,15 @@ onMounted(async() => {
     PAGES_STORAGE_KEY,
     SAVE_DRAFT_PREF_KEY,
     FONT_SIZE_STORAGE_KEY,
+    EDITOR_WIDTH_STORAGE_KEY,
     CHAR_TOOLBAR_PREF_KEY,
   ])
   if (typeof res[SAVE_DRAFT_PREF_KEY] === 'boolean')
     saveDraftEnabled.value = res[SAVE_DRAFT_PREF_KEY]
   if (typeof res[FONT_SIZE_STORAGE_KEY] === 'number')
     fontSize.value = clampFontSize(res[FONT_SIZE_STORAGE_KEY])
+  if (typeof res[EDITOR_WIDTH_STORAGE_KEY] === 'number')
+    editorWidth.value = clampEditorWidth(res[EDITOR_WIDTH_STORAGE_KEY])
   if (typeof res[CHAR_TOOLBAR_PREF_KEY] === 'boolean')
     showCharToolbar.value = res[CHAR_TOOLBAR_PREF_KEY]
   // Only restore if saving is on and the user hasn't already started typing while storage loads.
