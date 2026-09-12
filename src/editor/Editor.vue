@@ -240,9 +240,10 @@
             ref="textareaRef"
             v-model="text"
             placeholder="Peace begins with the first word..."
-            class="flex-1 w-full bg-transparent p-0 leading-[1.7] resize-none focus:outline-none font-serif text-[#2D3436] placeholder-[#E49B0F]/20 min-h-[60vh] pb-32"
+            class="w-full bg-transparent p-0 leading-[1.7] resize-none focus:outline-none font-serif text-[#2D3436] placeholder-[#E49B0F]/20 min-h-[60vh] pb-32 overflow-hidden"
             :style="{ fontSize: `${fontSize}px` }"
             @keydown="handleKeydown"
+            @input="syncTextareaHeight"
           ></textarea>
         </div>
       </main>
@@ -281,8 +282,8 @@
 
     <!-- Width control -->
     <div
-      class="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1 px-2 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-gray-100 shadow-lg shadow-black/5"
-      :class="[isPinned ? 'md:-translate-x-[calc(50%+160px)]' : '']"
+      class="fixed bottom-5 right-5 z-40 flex items-center gap-1 px-2 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-gray-100 shadow-lg shadow-black/5"
+      :class="[isPinned ? 'md:right-[340px]' : '']"
       title="Editor column width"
     >
       <button
@@ -420,7 +421,7 @@ const FONT_SIZE_MAX = 40
 const EDITOR_WIDTH_DEFAULT = 672
 const EDITOR_WIDTH_MIN = 320
 const EDITOR_WIDTH_MAX = 1400
-const EDITOR_WIDTH_STEP = 40
+const EDITOR_WIDTH_STEP = 1
 
 interface ZenPage {
   id: string
@@ -526,6 +527,7 @@ watch(fontSize, async(size) => {
     return
   const storage = await getZenLocalStorage()
   await storage.set({ [FONT_SIZE_STORAGE_KEY]: size })
+  nextTick(syncTextareaHeight)
 })
 
 watch(editorWidth, async(width) => {
@@ -533,6 +535,11 @@ watch(editorWidth, async(width) => {
     return
   const storage = await getZenLocalStorage()
   await storage.set({ [EDITOR_WIDTH_STORAGE_KEY]: width })
+  nextTick(syncTextareaHeight)
+})
+
+watch(activePageId, () => {
+  nextTick(syncTextareaHeight)
 })
 
 watch(showCharToolbar, async(visible) => {
@@ -540,6 +547,7 @@ watch(showCharToolbar, async(visible) => {
     return
   const storage = await getZenLocalStorage()
   await storage.set({ [CHAR_TOOLBAR_PREF_KEY]: visible })
+  nextTick(syncTextareaHeight)
 })
 
 function clampFontSize(size: number) {
@@ -721,6 +729,14 @@ function handleScroll() {
   isScrolled.value = window.scrollY > 20
 }
 
+function syncTextareaHeight() {
+  const el = textareaRef.value
+  if (!el)
+    return
+  el.style.height = 'auto'
+  el.style.height = `${el.scrollHeight}px`
+}
+
 function insertChar(char: string, backspace = 0) {
   const el = textareaRef.value
   if (!el) return
@@ -738,6 +754,7 @@ function insertChar(char: string, backspace = 0) {
     el.focus()
     const nextPos = replaceFrom + char.length
     el.setSelectionRange(nextPos, nextPos)
+    syncTextareaHeight()
   }, 0)
 }
 
@@ -777,7 +794,10 @@ function copyToClipboard() {
 function clearText() {
   if (text.value && confirm('Clear all text on this page?')) {
     text.value = ''
-    textareaRef.value?.focus()
+    nextTick(() => {
+      syncTextareaHeight()
+      textareaRef.value?.focus()
+    })
   }
 }
 
@@ -805,11 +825,14 @@ onMounted(async() => {
     hydrateFromStorage(res[PAGES_STORAGE_KEY], res[DRAFT_STORAGE_KEY])
   draftReady.value = true
   textareaRef.value?.focus()
+  nextTick(syncTextareaHeight)
   window.addEventListener('scroll', handleScroll)
+  window.addEventListener('resize', syncTextareaHeight)
 })
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
+  window.removeEventListener('resize', syncTextareaHeight)
   if (draftReady.value && saveDraftEnabled.value) {
     getZenLocalStorage().then(storage =>
       storage.set({ [PAGES_STORAGE_KEY]: pagesState() }),
@@ -884,8 +907,14 @@ textarea::-moz-selection,
 }
 
 /* Custom Scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #E5E7EB transparent;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
   width: 5px;
+  background: transparent;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -895,6 +924,10 @@ textarea::-moz-selection,
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #E5E7EB;
   border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /* Typography */
