@@ -123,6 +123,11 @@ And then pack files under `extension`, you can upload `extension.crx` or `extens
 
 ## Changelog
 
+### 2.0.11 — 2026-09-12
+
+- Dev: `pnpm run dev:editor` opens a hot-reloaded Zen Editor in the browser (no extension load required)
+- Zen Editor: storage falls back to `localStorage` outside the extension so Vite preview works
+
 ### 2.0.10 — 2026-09-12
 
 - Zen Editor: font size control in the header (default 16px)

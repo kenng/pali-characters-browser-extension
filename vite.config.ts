@@ -107,5 +107,21 @@ export default defineConfig(({ command }) => ({
     WindiCSS({
       config: windiConfig,
     }),
+
+    // Dev server has no src/index.html — send / to the zen editor MPA entry
+    {
+      name: 'redirect-root-to-editor',
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          if (req.url === '/' || req.url?.startsWith('/?')) {
+            res.statusCode = 302
+            res.setHeader('Location', '/editor/')
+            res.end()
+            return
+          }
+          next()
+        })
+      },
+    },
   ],
 }))

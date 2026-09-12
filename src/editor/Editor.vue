@@ -332,11 +332,11 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, computed, onUnmounted, nextTick } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
-import browser from 'webextension-polyfill'
 import { onItransKeyDown, resetItransBuffer } from '~/logic/itrans'
 import { onKeyDown } from '~/logic/pali-keyboard'
 import { getKeyboardMappingStr } from '~/logic/pali-keyboard-help'
 import { armOsInsertSuppress, installOsInsertSuppress } from '~/logic/os-insert-suppress'
+import { getZenLocalStorage } from '~/logic/zen-storage'
 
 const DRAFT_STORAGE_KEY = 'zenEditorDraft'
 const PAGES_STORAGE_KEY = 'zenEditorPages'
@@ -413,8 +413,9 @@ function pagesState(): ZenPagesState {
 const persistPages = useDebounceFn(async() => {
   if (!saveDraftEnabled.value)
     return
-  await browser.storage.local.set({ [PAGES_STORAGE_KEY]: pagesState() })
-  await browser.storage.local.remove(DRAFT_STORAGE_KEY)
+  const storage = await getZenLocalStorage()
+  await storage.set({ [PAGES_STORAGE_KEY]: pagesState() })
+  await storage.remove(DRAFT_STORAGE_KEY)
 }, 300)
 
 watch([pages, activePageId], () => {
@@ -426,17 +427,19 @@ watch([pages, activePageId], () => {
 watch(saveDraftEnabled, async(enabled) => {
   if (!draftReady.value)
     return
-  await browser.storage.local.set({ [SAVE_DRAFT_PREF_KEY]: enabled })
+  const storage = await getZenLocalStorage()
+  await storage.set({ [SAVE_DRAFT_PREF_KEY]: enabled })
   if (enabled)
-    await browser.storage.local.set({ [PAGES_STORAGE_KEY]: pagesState() })
+    await storage.set({ [PAGES_STORAGE_KEY]: pagesState() })
   else
-    await browser.storage.local.remove([PAGES_STORAGE_KEY, DRAFT_STORAGE_KEY])
+    await storage.remove([PAGES_STORAGE_KEY, DRAFT_STORAGE_KEY])
 })
 
 watch(fontSize, async(size) => {
   if (!draftReady.value)
     return
-  await browser.storage.local.set({ [FONT_SIZE_STORAGE_KEY]: size })
+  const storage = await getZenLocalStorage()
+  await storage.set({ [FONT_SIZE_STORAGE_KEY]: size })
 })
 
 function clampFontSize(size: number) {
@@ -647,7 +650,8 @@ function clearText() {
 
 onMounted(async() => {
   installOsInsertSuppress(document)
-  const res = await browser.storage.local.get([
+  const storage = await getZenLocalStorage()
+  const res = await storage.get([
     DRAFT_STORAGE_KEY,
     PAGES_STORAGE_KEY,
     SAVE_DRAFT_PREF_KEY,
@@ -667,8 +671,11 @@ onMounted(async() => {
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
-  if (draftReady.value && saveDraftEnabled.value)
-    browser.storage.local.set({ [PAGES_STORAGE_KEY]: pagesState() })
+  if (draftReady.value && saveDraftEnabled.value) {
+    getZenLocalStorage().then(storage =>
+      storage.set({ [PAGES_STORAGE_KEY]: pagesState() }),
+    )
+  }
 })
 </script>
 
